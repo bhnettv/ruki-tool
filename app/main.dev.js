@@ -11,9 +11,19 @@
  * @flow
  */
 import { app, BrowserWindow } from 'electron';
+import path from 'path';
 import MenuBuilder from './menu';
+import { getPluginEntry } from 'mpv.js';
 
 let mainWindow = null;
+
+// Absolute path to the plugin directory.
+const pluginDir = path.join(path.dirname(require.resolve("mpv.js")), "build", "Release");
+// See pitfalls section for details.
+if (process.platform !== "linux") {process.chdir(pluginDir);}
+// To support a broader number of systems.
+app.commandLine.appendSwitch("ignore-gpu-blacklist");
+app.commandLine.appendSwitch("register-pepper-plugins", getPluginEntry(pluginDir));
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -62,7 +72,8 @@ app.on('ready', async () => {
   mainWindow = new BrowserWindow({
     show: false,
     width: 1024,
-    height: 728
+    height: 728,
+    webPreferences: {plugins: true}
   });
 
   mainWindow.loadURL(`file://${__dirname}/app.html`);
