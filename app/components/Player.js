@@ -5,6 +5,8 @@ import { remote } from 'electron';
 import { ReactMPV } from 'mpv.js';
 import { Link } from 'react-router-dom';
 import s from './Player.css';
+import p from '../photon/dist/css/photon.css';
+import cx from 'classnames';
 
 class Player extends Component {
   constructor(props) {
@@ -23,10 +25,10 @@ class Player extends Component {
     this.handleLoad = this.handleLoad.bind(this);
   }
   componentDidMount() {
-    document.addEventListener("keydown", this.handleKeyDown, false);
+    this.container.addEventListener("keydown", this.handleKeyDown, false);
   }
   componentWillUnmount() {
-    document.removeEventListener("keydown", this.handleKeyDown, false);
+    this.container.removeEventListener("keydown", this.handleKeyDown, false);
   }
   handleKeyDown(e) {
     e.preventDefault();
@@ -94,7 +96,7 @@ class Player extends Component {
   }
   render() {
     return (
-      <div className={s.container}>
+      <div className={s.container} ref={(input) => { this.container = input; }}>
         <ReactMPV
           className={s.player}
           onReady={this.handleMPVReady}
@@ -103,7 +105,9 @@ class Player extends Component {
         />
         <div className={s.controls}>
           <button className={s.control} onClick={this.togglePause}>
-            {this.state.pause ? "▶" : "▮▮"}
+            {this.state.pause ?
+              <span className={cx(p['icon'], p['icon-play'])}></span> :
+              <span className={cx(p['icon'], p['icon-pause'])}></span>}
           </button>
           <button className={s.control} onClick={this.handleStop}>■</button>
           <input

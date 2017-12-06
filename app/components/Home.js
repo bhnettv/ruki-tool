@@ -5,6 +5,7 @@ import s from './Home.css';
 import p from '../photon/dist/css/photon.css';
 import Player from './Player';
 import Detail from './Detail';
+import List from './List';
 import cx from 'classnames';
 
 export default class Home extends Component {
@@ -21,7 +22,9 @@ export default class Home extends Component {
         </header> */}
         <div className={p['window-content']} data-tid="container">
           <div className={p['pane-group']}>
-            <div className={cx(p['pane-sm'], p['sidebar'])}></div>
+            <div className={cx(p['pane-sm'], p['sidebar'])}>
+              <List />
+            </div>
             <div className={p['pane']}>
               <Player />
             </div>
