@@ -71,7 +71,7 @@ app.on('ready', async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
+    width: 1500,
     height: 728,
     webPreferences: {plugins: true}
   });
