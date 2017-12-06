@@ -7,35 +7,40 @@ import cx from 'classnames';
 import { Treebeard } from 'react-treebeard';
 import FTPClient from 'ftp';
 import path from 'path';
+import config from '../config';
 
-const listDirs = (rootPath) => new Promise((resolve, reject) => {
-  client.list(rootPath, async (err, dirs) => {
+const listDirs = (parent) => new Promise((resolve, reject) => {
+  client.list(parent, async (err, dirs) => {
     if (err) reject(err);
     for (let dir of dirs) {
       if (dir.type === 'd') {
-        dir.children = await listDirs(path.join(rootPath, dir.name));
+        dir.children = await listDirs(path.join(parent, dir.name));
       }
     }
     const data = dirs.map(dir => ({ name: dir.name, children: dir.children }));
     resolve(data);
   });
 });
-const client = new FTPClient;
-client.on('ready', async () => {
-  const data = {
-    name: 'raw',
-    toggled: true,
-    children: await listDirs('/home/ruki_videos/ddpai_1'),
-  };
-  console.log(data);
-  client.end();
+const getDirsTree = (rt) => new Promise((resolve, reject) => {
+  const client = new FTPClient;
+  client.on('ready', async () => {
+    const data = {
+      name: rt,
+      toggled: true,
+      children: await listDirs('/home/ruki_videos/ddpai_1'),
+    };
+    console.log(data);
+    resolve(data);
+    client.end();
+  });
+  client.connect({
+    host: config.ftp.host,
+    user: config.ftp.user,
+    password: config.ftp.pass,
+    keepalive: 999999999,
+  });
 });
-client.connect({
-  host: '10.37.253.146',
-  user: 'zomco',
-  password: 'w42ndGF0115',
-  keepalive: 999999999,
-});
+
 
 const data = {
     name: 'root',
@@ -71,7 +76,15 @@ const data = {
 class List extends Component {
   constructor(props){
       super(props);
-      this.state = {};
+      this.state = {
+        cursor: null,
+        isLoading: false,
+        data: [],
+      };
+  }
+
+  componentDidMount () {
+
   }
 
   onToggle = (node, toggled) => {
