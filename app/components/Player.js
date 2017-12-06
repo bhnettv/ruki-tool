@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import { remote } from 'electron';
 import { ReactMPV } from 'mpv.js';
 import { Link } from 'react-router-dom';
-import styles from './Player.css';
+import s from './Player.css';
 
 class Player extends Component {
   constructor(props) {
@@ -94,20 +94,20 @@ class Player extends Component {
   }
   render() {
     return (
-      <div className="container">
+      <div className={s.container}>
         <ReactMPV
-          className="player"
+          className={s.player}
           onReady={this.handleMPVReady}
           onPropertyChange={this.handlePropertyChange}
           onMouseDown={this.togglePause}
         />
-        <div className="controls">
-          <button className="control" onClick={this.togglePause}>
+        <div className={s.controls}>
+          <button className={s.control} onClick={this.togglePause}>
             {this.state.pause ? "▶" : "▮▮"}
           </button>
-          <button className="control" onClick={this.handleStop}>■</button>
+          <button className={s.control} onClick={this.handleStop}>■</button>
           <input
-            className="seek"
+            className={s.seek}
             type="range"
             min={0}
             step={0.1}
@@ -117,7 +117,7 @@ class Player extends Component {
             onMouseDown={this.handleSeekMouseDown}
             onMouseUp={this.handleSeekMouseUp}
           />
-          <button className="control" onClick={this.handleLoad}>⏏</button>
+          <button className={s.control} onClick={this.handleLoad}>⏏</button>
         </div>
       </div>
     );
