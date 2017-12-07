@@ -8,7 +8,7 @@ import s from './Player.css';
 import p from '../photon/dist/css/photon.css';
 import cx from 'classnames';
 
-class Player extends Component {
+export default class Player extends Component {
   constructor(props) {
     super(props);
     this.mpv = null;
@@ -127,5 +127,3 @@ class Player extends Component {
     );
   }
 }
-
-export default Player;

@@ -4,11 +4,11 @@ import { Link } from 'react-router-dom';
 import s from './List.css';
 import p from '../photon/dist/css/photon.css';
 import cx from 'classnames';
-import { Treebeard } from 'react-treebeard';
 import FTPClient from 'ftp';
 import path from 'path';
 import config from '../config';
 
+const client = new FTPClient;
 const listDirs = (parent) => new Promise((resolve, reject) => {
   client.list(parent, async (err, dirs) => {
     if (err) reject(err);
@@ -22,17 +22,16 @@ const listDirs = (parent) => new Promise((resolve, reject) => {
   });
 });
 const getDirsTree = (rt) => new Promise((resolve, reject) => {
-  const client = new FTPClient;
   client.on('ready', async () => {
     const data = {
       name: rt,
       toggled: true,
-      children: await listDirs('/home/ruki_videos/ddpai_1'),
+      children: await listDirs(`/home/ruki_videos/${rt}`),
     };
-    console.log(data);
     resolve(data);
     client.end();
   });
+  client.on('error', err => reject(err));
   client.connect({
     host: config.ftp.host,
     user: config.ftp.user,
@@ -41,69 +40,56 @@ const getDirsTree = (rt) => new Promise((resolve, reject) => {
   });
 });
 
-
-const data = {
-    name: 'root',
-    toggled: true,
-    children: [
-        {
-            name: 'parent',
-            children: [
-                { name: 'child1' },
-                { name: 'child2' }
-            ]
-        },
-        {
-            name: 'loading parent',
-            loading: true,
-            children: []
-        },
-        {
-            name: 'parent',
-            children: [
-                {
-                    name: 'nested parent',
-                    children: [
-                        { name: 'nested child 1' },
-                        { name: 'nested child 2' }
-                    ]
-                }
-            ]
-        }
-    ]
-};
-
-class List extends Component {
+export default class List extends Component {
   constructor(props){
       super(props);
       this.state = {
-        cursor: null,
         isLoading: false,
-        data: [],
+        selectTree: null,
+        selectName: '',
       };
   }
 
   componentDidMount () {
-
+    this.setState({ isLoading: true });
+    getDirsTree('ddpai/ddpai_t30_c1_l1').then((data) => {
+      this.setState({ selectTree: data, isLoading: false });
+    });
   }
 
-  onToggle = (node, toggled) => {
-      if(this.state.cursor){this.state.cursor.active = false;}
-      node.active = true;
-      if(node.children){ node.toggled = toggled; }
-      this.setState({ cursor: node });
+  onSelect = (e) => {
+    this.setState({ selectName: e.target.innerHTML})
   };
 
   render() {
+    const { selectTree, isLoading, selectName } = this.state;
     return (
       <div className={s['container']}>
-        <Treebeard
-          data={data}
-          onToggle={this.onToggle}
-        />
+        {
+          isLoading?
+          (
+            <div>加载中...</div>
+          ):
+          selectTree?
+          (
+            <table className={p['table-striped']}>
+              <tbody onClick={this.onSelect}>
+                {selectTree.children.map((child, i) => (
+                  <tr
+                    key={i}
+                    className={child.name === selectName? s['active']: ''}
+                  >
+                    <td>{child.name}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          ):
+          (
+            <div>没有数据</div>
+          )
+        }
       </div>
     );
   }
 }
-
-export default List;

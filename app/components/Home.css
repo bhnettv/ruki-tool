@@ -12,3 +12,7 @@
 .container a {
   font-size: 1.4rem;
 }
+
+.active {
+  font-weight: bold;
+}
