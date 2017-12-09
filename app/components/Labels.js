@@ -1,13 +1,17 @@
 // @flow
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import s from './Detail.css';
+import s from './Labels.css';
 import p from '../photon/dist/css/photon.css';
 import cx from 'classnames';
 import Datetime from 'react-datetime';
+import type { LabelType } from '../reducers/home';
 
-class Detail extends Component {
+export default class Labels extends Component {
   props: {
+    labels: ?LabelType,
+    isLoadingVideo: boolean,
+    isLoadingVideoDir: boolean,
   };
 
   renderDatetime = (props, openCalendar) => {
@@ -21,6 +25,7 @@ class Detail extends Component {
   };
 
   render() {
+    const { labels, isLoadingVideo, isLoadingVideoDir } = this.props;
     return (
       <div className={s['container']}>
         <form className={s['form']}>
@@ -86,5 +91,3 @@ class Detail extends Component {
     );
   }
 }
-
-export default Detail;

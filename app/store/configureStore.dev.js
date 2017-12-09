@@ -6,10 +6,13 @@ import { createLogger } from 'redux-logger';
 import rootReducer from '../reducers';
 import * as counterActions from '../actions/counter';
 import type { counterStateType } from '../reducers/counter';
+import * as homeActions from '../actions/home';
+import type { homeStateType } from '../reducers/home';
 
 const history = createHashHistory();
+type initialStateType = homeStateType | counterStateType;
 
-const configureStore = (initialState?: counterStateType) => {
+const configureStore = (initialState?: initialStateType) => {
   // Redux Configuration
   const middleware = [];
   const enhancers = [];

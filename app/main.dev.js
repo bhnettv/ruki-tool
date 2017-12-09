@@ -10,10 +10,11 @@
  *
  * @flow
  */
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import path from 'path';
 import MenuBuilder from './menu';
 import { getPluginEntry } from 'mpv.js';
+import config from './config';
 
 let mainWindow = null;
 
@@ -94,4 +95,19 @@ app.on('ready', async () => {
 
   const menuBuilder = new MenuBuilder(mainWindow);
   menuBuilder.buildMenu();
+
+  ipcMain.on('open-file-dialog', (event) => {
+    dialog.showOpenDialog(mainWindow, {
+      defaultPath: config.ftp.macMount,
+      properties: ['openDirectory']
+    }, (files) => {
+      if (files) {
+        const regexp = new RegExp(`^${config.ftp.macMount}/(ddpai|s360)/(.+)$`);
+        const results = regexp.exec(files);
+        if (results && results[1] && results[2]) {
+          event.sender.send('selected-directory', { root: results[1], sub: results[2] })
+        }
+      }
+    })
+  });
 });

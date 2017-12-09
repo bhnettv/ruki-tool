@@ -9,10 +9,22 @@ import p from '../photon/dist/css/photon.css';
 import cx from 'classnames';
 
 export default class Player extends Component {
+  props: {
+    isLoadingVideo: boolean,
+    isLoadingVideoDir: boolean,
+    video: ?string,
+    videoDir: ?string,
+  };
+
   constructor(props) {
     super(props);
     this.mpv = null;
-    this.state = {pause: true, "time-pos": 0, duration: 0, fullscreen: false};
+    this.state = {
+      pause: true,
+      "time-pos": 0,
+      duration: 0,
+      fullscreen: false,
+    };
     this.handleKeyDown = this.handleKeyDown.bind(this);
     this.handleMPVReady = this.handleMPVReady.bind(this);
     this.handlePropertyChange = this.handlePropertyChange.bind(this);
@@ -30,6 +42,7 @@ export default class Player extends Component {
   componentWillUnmount() {
     this.container.removeEventListener("keydown", this.handleKeyDown, false);
   }
+  // 键盘按键监听，除了f和esc，其他按键按照mpv处理
   handleKeyDown(e) {
     e.preventDefault();
     if (e.key === "f" || (e.key === "Escape" && this.state.fullscreen)) {
@@ -42,7 +55,7 @@ export default class Player extends Component {
     this.mpv = mpv;
     const observe = mpv.observe.bind(mpv);
     ["pause", "time-pos", "duration", "eof-reached"].forEach(observe);
-    this.mpv.command("loadfile", path.join(__dirname, "tos.mkv"));
+    // this.mpv.command("loadfile", path.join(__dirname, "tos.mkv"));
   }
   handlePropertyChange(name, value) {
     if (name === "time-pos" && this.seeking) {
@@ -53,6 +66,7 @@ export default class Player extends Component {
       this.setState({[name]: value});
     }
   }
+  // 切换全屏幕
   toggleFullscreen() {
     if (this.state.fullscreen) {
       document.webkitExitFullscreen();
@@ -61,29 +75,35 @@ export default class Player extends Component {
     }
     this.setState({fullscreen: !this.state.fullscreen});
   }
+  // 切换暂停
   togglePause(e) {
     e.target.blur();
     if (!this.state.duration) return;
     this.mpv.property("pause", !this.state.pause);
   }
+  // 停止播放
   handleStop(e) {
     e.target.blur();
     this.mpv.property("pause", true);
     this.mpv.command("stop");
     this.setState({"time-pos": 0, duration: 0});
   }
+  // 跳转按下
   handleSeekMouseDown() {
     this.seeking = true;
   }
+  // 执行跳转
   handleSeek(e) {
     e.target.blur();
     const timePos = +e.target.value;
     this.setState({"time-pos": timePos});
     this.mpv.property("time-pos", timePos);
   }
+  // 跳转按键
   handleSeekMouseUp() {
     this.seeking = false;
   }
+  // 加载文件
   handleLoad(e) {
     e.target.blur();
     const items = remote.dialog.showOpenDialog({filters: [
@@ -96,7 +116,10 @@ export default class Player extends Component {
   }
   render() {
     return (
-      <div className={s.container} ref={(input) => { this.container = input; }}>
+      <div
+        className={s.container}
+        ref={(input) => { this.container = input; }}
+      >
         <ReactMPV
           className={s.player}
           onReady={this.handleMPVReady}
@@ -109,7 +132,9 @@ export default class Player extends Component {
               <span className={cx(p['icon'], p['icon-play'])}></span> :
               <span className={cx(p['icon'], p['icon-pause'])}></span>}
           </button>
-          <button className={s.control} onClick={this.handleStop}>■</button>
+          <button className={s.control} onClick={this.handleStop}>
+              <span className={cx(p['icon'], p['icon-stop'])}></span>
+          </button>
           <input
             className={s.seek}
             type="range"
@@ -121,7 +146,9 @@ export default class Player extends Component {
             onMouseDown={this.handleSeekMouseDown}
             onMouseUp={this.handleSeekMouseUp}
           />
-          <button className={s.control} onClick={this.handleLoad}>⏏</button>
+          <button className={s.control} onClick={this.handleLoad}>
+            <span className={cx(p['icon'], p['icon-video'])}></span>
+          </button>
         </div>
       </div>
     );
