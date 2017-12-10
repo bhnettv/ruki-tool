@@ -7,6 +7,7 @@ import { Link } from 'react-router-dom';
 import s from './Player.css';
 import p from '../photon/dist/css/photon.css';
 import cx from 'classnames';
+import config from '../config';
 
 export default class Player extends Component {
   props: {
@@ -51,12 +52,14 @@ export default class Player extends Component {
       this.mpv.keypress(e);
     }
   }
+  // mpv监听属性变化
   handleMPVReady(mpv) {
     this.mpv = mpv;
     const observe = mpv.observe.bind(mpv);
     ["pause", "time-pos", "duration", "eof-reached"].forEach(observe);
     // this.mpv.command("loadfile", path.join(__dirname, "tos.mkv"));
   }
+  // mpv属性与state绑定
   handlePropertyChange(name, value) {
     if (name === "time-pos" && this.seeking) {
       return;
@@ -114,7 +117,23 @@ export default class Player extends Component {
       this.mpv.command("loadfile", items[0]);
     }
   }
+  // 如果videoDir和video发生变化，则加载视频文件
+  componentWillReceiveProps (nextProps) {
+    if (nextProps.videoDir &&
+      nextProps.video &&
+      this.props.videoDir !== nextProps.video &&
+      this.props.video !== nextProps.video
+    ) {
+        this.mpv.command("loadfile", path.join(config.ftp.macMount, nextProps.videoDir, nextProps.video));
+    }
+  }
   render() {
+    const {
+      isLoadingVideo,
+      isLoadingVideoDir,
+      video,
+      videoDir,
+    } = this.props;
     return (
       <div
         className={s.container}

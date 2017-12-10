@@ -8,3 +8,14 @@
 .active {
   font-weight: bold;
 }
+
+.videos-tip {
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  height: 100%;
+}
+
+.videos-tip-text {
+
+}

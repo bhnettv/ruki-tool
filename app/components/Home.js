@@ -16,7 +16,9 @@ import { ipcRenderer } from 'electron';
 export default class Home extends Component {
   props: {
     isLoadingVideo: boolean,
+    loadingVideoErr: ?string,
     isLoadingVideoDir: boolean,
+    loadingVideoDirErr: ?string,
     video: ?string,
     videoDir: ?string,
     videos: (?string)[],
@@ -29,7 +31,9 @@ export default class Home extends Component {
   render() {
     const {
       isLoadingVideo,
+      loadingVideoErr,
       isLoadingVideoDir,
+      loadingVideoDirErr,
       videos,
       videoDirs,
       video,
@@ -40,16 +44,33 @@ export default class Home extends Component {
     } = this.props;
     return (
       <div className={p['window']}>
-        <div className={p['tab-group']}>
+        <div
+          className={p['tab-group']}
+        >
           {
             videoDirs.map((vd) => (
               <div
                 key={`t-${vd}`}
                 className={vd === videoDir? cx(p['tab-item'], p['active']): p['tab-item']}
-                onClick={(e) => choseVideoDir(e.target.innerHTML)}
+                onClick={(e) => {
+                  if (!isLoadingVideoDir || vd !== videoDir) {
+                    choseVideoDir(e.target.childNodes[1].innerHTML);
+                  }
+                }}
               >
                 <span className={cx(p['icon'], p['icon-cancel'], p['icon-close-tab'])}></span>
-                { vd }
+                {
+                  vd === videoDir && isLoadingVideoDir?
+                  (
+                    <span>
+                      <i className="fa fa-spinner fa-spin fa-fw"></i>
+                      <span className="sr-only">加载中...</span>
+                    </span>
+                  ):
+                  (
+                    <span>{vd}</span>
+                  )
+                }
               </div>
             ))
           }
@@ -69,6 +90,7 @@ export default class Home extends Component {
               <Videos
                 videos={videos}
                 video={video}
+                isLoadingVideo={isLoadingVideo}
                 isLoadingVideoDir={isLoadingVideoDir}
                 choseVideo={choseVideo}
               />

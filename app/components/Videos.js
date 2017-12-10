@@ -7,6 +7,7 @@ import cx from 'classnames';
 
 export default class Videos extends Component {
   props: {
+    isLoadingVideo: boolean,
     isLoadingVideoDir: boolean,
     video: ?string,
     videos: (?string)[],
@@ -14,31 +15,60 @@ export default class Videos extends Component {
   };
 
   render() {
-    const { isLoadingVideoDir, video, videos, choseVideo } = this.props;
+    const {
+      isLoadingVideo,
+      isLoadingVideoDir,
+      video,
+      videos,
+      choseVideo,
+    } = this.props;
     return (
       <div className={s['container']}>
         {
           isLoadingVideoDir?
           (
-            <div>加载中...</div>
+            <div className={s['videos-tip']}>
+              <div className={s['videos-tip-text']}>
+                加载中...
+              </div>
+            </div>
           ):
           videos.length > 0?
           (
             <table className={p['table-striped']}>
-              <tbody onClick={(e) => choseVideo(e.target.innerHTML)}>
+              <tbody onClick={(e) => {
+                  if (!isLoadingVideo || isLoadingVideo !== e.target.innerHTML) {
+                    choseVideo(e.target.innerHTML);
+                  }
+                }}>
                 {videos.map((v, i) => (
                   <tr
                     key={`v-${i}`}
                     className={v === video? s['active']: ''}
                   >
-                    <td>{v}</td>
+                    {
+                      v === video && isLoadingVideo?
+                      (
+                        <td>
+                          <i className="fa fa-spinner fa-spin fa-fw"></i>
+                          <span className="sr-only">加载中...</span>
+                        </td>
+                      ):
+                      (
+                        <td>{v}</td>
+                      )
+                    }
                   </tr>
                 ))}
               </tbody>
             </table>
           ):
           (
-            <div>没有数据</div>
+            <div className={s['videos-tip']}>
+              <div className={s['videos-tip-text']}>
+                没有数据
+              </div>
+            </div>
           )
         }
       </div>

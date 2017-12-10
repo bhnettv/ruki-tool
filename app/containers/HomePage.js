@@ -8,7 +8,9 @@ import * as HomeActions from '../actions/home';
 function mapStateToProps(state) {
   const {
     isLoadingVideo,
+    loadingVideoErr,
     isLoadingVideoDir,
+    loadingVideoDirErr,
     video,
     videoDir,
     videos,
@@ -17,7 +19,9 @@ function mapStateToProps(state) {
   } = state.home;
   return {
     isLoadingVideo,
+    loadingVideoErr,
     isLoadingVideoDir,
+    loadingVideoDirErr,
     video,
     videoDir,
     videos,

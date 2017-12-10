@@ -14,7 +14,9 @@ export type LabelType = {
 
 export type homeStateType = {
   +isLoadingVideo: boolean,
+  +loadingVideoErr: string,
   +isLoadingVideoDir: boolean,
+  +loadingVideoDirErr: string,
   +video: string,
   +videoDir: string,
   +videos: string[],
@@ -28,11 +30,13 @@ type actionType = {
 
 export default function home(state: homeStateType = {
   isLoadingVideo: false,
+  loadingVideoErr: '',
   isLoadingVideoDir: false,
+  loadingVideoDirErr: '',
   video: '',
-  videoDir: '',
+  videoDir: 'ddpai/ddpai_t6_c0_l1',
   videos: [],
-  videoDirs: [],
+  videoDirs: ['ddpai/ddpai_t6_c0_l1'],
   labels: {
     title: '',
     datetime: '',
@@ -51,6 +55,9 @@ export default function home(state: homeStateType = {
       if (action.labels) {
         newState.labels = action.labels;
         newState.isLoadingVideo = false;
+      } else if (action.loadingVideoErr) {
+        newState.loadingVideoErr = action.loadingVideoErr;
+        newState.isLoadingVideo = false;
       } else {
         newState.isLoadingVideo = true;
       }
@@ -64,9 +71,12 @@ export default function home(state: homeStateType = {
       };
       if (action.videos) {
         newState.videos = action.videos;
-        newState.isLoading = false;
+        newState.isLoadingVideoDir = false;
+      } else if (action.loadingVideoDirErr) {
+        newState.loadingVideoDirErr = action.loadingVideoDirErr;
+        newState.isLoadingVideoDir = false;
       } else {
-        newState.isLoadingVideo = true;
+        newState.isLoadingVideoDir = true;
       }
       return {...state, ...newState};
     }

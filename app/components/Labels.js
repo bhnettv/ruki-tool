@@ -29,34 +29,18 @@ export default class Labels extends Component {
     return (
       <div className={s['container']}>
         <form className={s['form']}>
-          <label>分类</label>
-          <div className={p['radio']}>
-            <label>
-              <input type="radio" name="beins" />
-              Nogroup，无分组
-            </label>
-          </div>
-          <div className={p['radio']}>
-            <label>
-              <input type="radio" name="beins" />
-              Crashme，视频车事故
-            </label>
-          </div>
-          <div className={p['radio']}>
-            <label>
-              <input type="radio" name="beins" />
-              Crashit，非视频车事故
-            </label>
-          </div>
-          <div className={p['radio']}>
-            <label>
-              <input type="radio" name="beins" />
-              Nocrash，没有事故
-            </label>
+          <div className={p['form-group']}>
+            <label>分类</label>
+            <select className={p['form-control']}>
+              <option value="nogroup" selected>无分类 - nogroup</option>
+              <option value="crashme">视频车事故 - crashme</option>
+              <option value="crashit">非视频车事故 - crashit</option>
+              <option value="nocrash">无事故 - nocrash</option>
+            </select>
           </div>
           <div className={p['form-group']}>
             <label>标题</label>
-          <textarea  className={p['form-control']} rows="1" placeholder="还有这种操作？" />
+            <textarea  className={p['form-control']} rows="1" placeholder="还有这种操作？" />
           </div>
           <div className={p['form-group']}>
             <label>时间</label>
