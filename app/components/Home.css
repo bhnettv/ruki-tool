@@ -12,3 +12,7 @@
 .container a {
   font-size: 1.4rem;
 }
+
+.pane-labels {
+  max-width: 250px;
+}

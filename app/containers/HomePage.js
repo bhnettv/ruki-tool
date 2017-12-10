@@ -6,28 +6,8 @@ import Home from '../components/Home';
 import * as HomeActions from '../actions/home';
 
 function mapStateToProps(state) {
-  const {
-    isLoadingVideo,
-    loadingVideoErr,
-    isLoadingVideoDir,
-    loadingVideoDirErr,
-    video,
-    videoDir,
-    videos,
-    videoDirs,
-    labels,
-  } = state.home;
-  return {
-    isLoadingVideo,
-    loadingVideoErr,
-    isLoadingVideoDir,
-    loadingVideoDirErr,
-    video,
-    videoDir,
-    videos,
-    videoDirs,
-    labels,
-  };
+  const home = state.home;
+  return { ...home };
 }
 
 function mapDispatchToProps(dispatch) {

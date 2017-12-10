@@ -11,8 +11,21 @@ export default class Videos extends Component {
     isLoadingVideoDir: boolean,
     video: ?string,
     videos: (?string)[],
+    videoDir: ?string,
     choseVideo: (string) => void,
   };
+
+  // componentDidMount() {
+  //   this.container.addEventListener("keydown", this.handleKeyDown, false);
+  // }
+  // componentWillUnmount() {
+  //   this.container.removeEventListener("keydown", this.handleKeyDown, false);
+  // }
+  // // 键盘按键监听
+  // handleKeyDown = (e) => {
+  //   console.log(e.key);
+  //   e.preventDefault();
+  // };
 
   render() {
     const {
@@ -23,7 +36,10 @@ export default class Videos extends Component {
       choseVideo,
     } = this.props;
     return (
-      <div className={s['container']}>
+      <div
+        className={s['container']}
+        ref={(input) => { this.container = input; }}
+      >
         {
           isLoadingVideoDir?
           (

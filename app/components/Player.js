@@ -121,7 +121,6 @@ export default class Player extends Component {
   componentWillReceiveProps (nextProps) {
     if (nextProps.videoDir &&
       nextProps.video &&
-      this.props.videoDir !== nextProps.video &&
       this.props.video !== nextProps.video
     ) {
         this.mpv.command("loadfile", path.join(config.ftp.macMount, nextProps.videoDir, nextProps.video));

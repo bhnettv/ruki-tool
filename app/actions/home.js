@@ -70,6 +70,7 @@ const getDirFiles = (vDir) => new Promise((resolve, reject) => {
 
 export const CHOSE_VIDEO = 'CHOSE_VIDEO';
 export const CHOSE_VIDEO_DIR = 'CHOSE_VIDEO_DIR';
+export const UPDATE_LABELS = 'UPDATE_LABELS';
 
 export const choseVideo = (video) => (dispatch: (action: actionType) => void, getState: () => homeStateType) => {
   dispatch({
@@ -90,6 +91,7 @@ export const choseVideo = (video) => (dispatch: (action: actionType) => void, ge
         keywords: [],
         plates: [],
       },
+      labelsAt: 'ungroup',
     });
   }, 1000);
 }
@@ -114,4 +116,17 @@ export const choseVideoDir = (videoDir) => (dispatch: (action: actionType) => vo
       loadingVideoDirErr: '超时',
     });
   });
-}
+};
+
+export const updateLabels = (labels, labelsAt) => (dispatch: (action: actionType) => void, getState: () => homeStateType) => {
+  dispatch({
+    type: UPDATE_LABELS,
+  });
+  return setTimeout(() => {
+    dispatch({
+      type: UPDATE_LABELS,
+      labels: labels,
+      labelsAt: labelsAt,
+    });
+  }, 1000);
+};

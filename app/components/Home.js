@@ -19,14 +19,24 @@ export default class Home extends Component {
     loadingVideoErr: ?string,
     isLoadingVideoDir: boolean,
     loadingVideoDirErr: ?string,
+    isUpdatingLabels: boolean,
+    updatingLabelsErr: ?string,
     video: ?string,
     videoDir: ?string,
     videos: (?string)[],
     videoDirs: (?string)[],
     labels: ?LabelType,
+    labelsAt: ?string,
     choseVideo: (string) => void,
     choseVideoDir: (string) => void,
+    updateLabels: (LabelType, string) => void,
   };
+
+  // 启动时加载某个路径的视频
+  componentDidMount () {
+    const { choseVideoDir } = this.props;
+    choseVideoDir('ddpai/ddpai_t6_c0_l1');
+  }
 
   render() {
     const {
@@ -34,13 +44,17 @@ export default class Home extends Component {
       loadingVideoErr,
       isLoadingVideoDir,
       loadingVideoDirErr,
+      isUpdatingLabels,
+      updatingLabelsErr,
       videos,
       videoDirs,
       video,
       videoDir,
       labels,
+      labelsAt,
       choseVideo,
       choseVideoDir,
+      updateLabels,
     } = this.props;
     return (
       <div className={p['window']}>
@@ -90,6 +104,7 @@ export default class Home extends Component {
               <Videos
                 videos={videos}
                 video={video}
+                videoDir={videoDir}
                 isLoadingVideo={isLoadingVideo}
                 isLoadingVideoDir={isLoadingVideoDir}
                 choseVideo={choseVideo}
@@ -101,13 +116,18 @@ export default class Home extends Component {
                 video={video}
                 isLoadingVideoDir={isLoadingVideoDir}
                 isLoadingVideo={isLoadingVideo}
+                updateLabels={updateLabels}
               />
             </div>
-            <div className={cx(p['pane-sm'], p['sidebar'])}>
+            <div className={cx(p['pane-sm'], p['sidebar'], s['pane-labels'])}>
               <Labels
                 labels={labels}
+                labelsAt={labelsAt}
                 isLoadingVideoDir={isLoadingVideoDir}
                 isLoadingVideo={isLoadingVideo}
+                isUpdatingLabels={isUpdatingLabels}
+                updatingLabelsErr={updatingLabelsErr}
+                updateLabels={updateLabels}
               />
             </div>
           </div>
