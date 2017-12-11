@@ -1,5 +1,10 @@
 // @flow
-import { CHOSE_VIDEO, CHOSE_VIDEO_DIR, UPDATE_LABELS } from '../actions/home';
+import {
+  CHOSE_VIDEO,
+  CHOSE_VIDEO_DIR,
+  UPDATE_LABELS,
+  EDIT_LABELS,
+} from '../actions/home';
 
 export type LabelType = {
   title: string,
@@ -76,7 +81,7 @@ export default function home(state: homeStateType = {
           keywords: [],
           plates: [],
         };
-        newState.labelsAt = 'ungroup';
+        newState.labelsAt = '';
         newState.isLoadingVideo = true;
       }
       return {...state, ...newState};
@@ -114,6 +119,14 @@ export default function home(state: homeStateType = {
       } else {
         newState.isUpdatingLabels = true;
       }
+      return {...state, ...newState};
+    }
+    case EDIT_LABELS:
+    {
+      const newState = {
+        labels: action.labels,
+        labelsAt: action.labelsAt,
+      };
       return {...state, ...newState};
     }
     default:

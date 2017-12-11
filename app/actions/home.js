@@ -2,6 +2,7 @@
 import { homeStateType } from '../reducers/home';
 import FTPClient from 'ftp';
 import path from 'path';
+import fs from 'fs';
 import config from '../config';
 
 type actionType = {
@@ -56,8 +57,8 @@ const getDirFiles = (vDir) => new Promise((resolve, reject) => {
         }
       }
       resolve(data);
+      client.end();
     });
-    client.end();
   });
   client.on('error', err => reject(err));
   client.connect({
@@ -68,32 +69,137 @@ const getDirFiles = (vDir) => new Promise((resolve, reject) => {
   });
 });
 
+const getJSONData = (v, j) => new Promise((resolve, reject) => {
+  try {
+    if (fs.existsSync(j)) {
+      const data = fs.readFileSync(j, 'utf8');
+      const jsonData = JSON.parse(data);
+      const name = path.basename(v, path.extname(v));
+      if (jsonData && jsonData[name]) {
+        resolve(jsonData[name]);
+      } else {
+        resolve({});
+      }
+    } else {
+      resolve({});
+    }
+  } catch (e) {
+    reject(e);
+  }
+});
+
+const getFileInfo = (vDir, v) => new Promise(async (resolve, reject) => {
+  try {
+    // 获取路径
+    const regexp = new RegExp(`^(ddpai|s360)/(.+)$`);
+    const results = regexp.exec(vDir);
+    if (results && results[1] && results[2]) {
+      // 先检查crashme目录
+      let data = await getJSONData(v, path.join(
+        config.ftp.macMount,
+        'raw',
+        results[1],
+        'crashme',
+        'index.json',
+      ));
+      let dataAt = 'crashme';
+      // 如果没有，则继续检查crashit目录
+      if (Object.keys(data).length === 0 && data.constructor === Object) {
+        data = await getJSONData(v, path.join(
+          config.ftp.macMount,
+          'raw',
+          results[1],
+          'crashit',
+          'index.json',
+        ));
+        dataAt = 'crashit';
+      }
+      // 如果没有，则继续检查nocrash目录
+      if (Object.keys(data).length === 0 && data.constructor === Object) {
+        data = await getJSONData(v, path.join(
+          config.ftp.macMount,
+          'raw',
+          results[1],
+          'nocrash',
+          'index.json',
+        ));
+        dataAt = 'nocrash';
+      }
+      // 如果没有，则继续检查nogroup目录
+      if (Object.keys(data).length === 0 && data.constructor === Object) {
+        data = await getJSONData(v, path.join(
+          config.ftp.macMount,
+          'raw',
+          results[1],
+          'nogroup',
+          'index.json',
+        ));
+        dataAt = 'nogroup';
+      }
+      // 还是没有，则继续检查原始目录
+      if (Object.keys(data).length === 0 && data.constructor === Object) {
+        data = await getJSONData(v, path.join(
+          config.ftp.macMount,
+          vDir,
+          'index.json',
+        ));
+        dataAt = '';
+      }
+      // 返回结果
+      if (Object.keys(data).length === 0 && data.constructor === Object) {
+        resolve({
+          labels: {
+            title: '',
+            datetime: '',
+            range: [0, -1],
+            coords: [],
+            crashes: [],
+            rules: [],
+            keywords: [],
+            plates: [],
+          },
+          labelsAt: '',
+        });
+      } else {
+        resolve({
+          labels: {
+            title: data.des || '',
+            datetime: data.datetime || '',
+            range: data.range || [0, -1],
+            coords: data.coords || [],
+            crashes: data.crashes || [],
+            rules: data.rules || [],
+            keywords: data.keywords || [],
+            plates: data.plates || [],
+          },
+          labelsAt: dataAt,
+        });
+      }
+    }
+  } catch (e) {
+    reject(e);
+  }
+});
+
 export const CHOSE_VIDEO = 'CHOSE_VIDEO';
 export const CHOSE_VIDEO_DIR = 'CHOSE_VIDEO_DIR';
 export const UPDATE_LABELS = 'UPDATE_LABELS';
+export const EDIT_LABELS = 'EDIT_LABELS';
 
-export const choseVideo = (video) => (dispatch: (action: actionType) => void, getState: () => homeStateType) => {
+export const choseVideo = (videoDir, video) => (dispatch: (action: actionType) => void, getState: () => homeStateType) => {
   dispatch({
     type: CHOSE_VIDEO,
     video: video,
   });
-  return setTimeout(() => {
+  return getFileInfo(videoDir, video)
+  .then((info) => {
     dispatch({
       type: CHOSE_VIDEO,
       video: video,
-      labels: {
-        title: '',
-        datetime: '',
-        range: [0, -1],
-        coords: [],
-        crashes: [],
-        rules: [],
-        keywords: [],
-        plates: [],
-      },
-      labelsAt: 'ungroup',
-    });
-  }, 1000);
+      labels: info.labels,
+      labelsAt: info.labelsAt,
+    })
+  })
 }
 
 export const choseVideoDir = (videoDir) => (dispatch: (action: actionType) => void, getState: () => homeStateType) => {
@@ -130,3 +236,11 @@ export const updateLabels = (labels, labelsAt) => (dispatch: (action: actionType
     });
   }, 1000);
 };
+
+export const editLabels = (labels, labelsAt) => {
+  return {
+    type: EDIT_LABELS,
+    labels: labels,
+    labelsAt: labelsAt,
+  };
+}

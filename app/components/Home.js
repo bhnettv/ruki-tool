@@ -30,6 +30,7 @@ export default class Home extends Component {
     choseVideo: (string) => void,
     choseVideoDir: (string) => void,
     updateLabels: (LabelType, string) => void,
+    editLabels: (LabelType, string) => void,
   };
 
   // 启动时加载某个路径的视频
@@ -55,6 +56,7 @@ export default class Home extends Component {
       choseVideo,
       choseVideoDir,
       updateLabels,
+      editLabels,
     } = this.props;
     return (
       <div className={p['window']}>
@@ -119,7 +121,7 @@ export default class Home extends Component {
                 updateLabels={updateLabels}
               />
             </div>
-            <div className={cx(p['pane-sm'], p['sidebar'], s['pane-labels'])}>
+            <div className={cx(p['sidebar'], s['pane-labels'])}>
               <Labels
                 labels={labels}
                 labelsAt={labelsAt}
@@ -128,12 +130,20 @@ export default class Home extends Component {
                 isUpdatingLabels={isUpdatingLabels}
                 updatingLabelsErr={updatingLabelsErr}
                 updateLabels={updateLabels}
+                editLabels={editLabels}
               />
             </div>
           </div>
         </div>
         <footer className={cx(p['toolbar'], p['toolbar-footer'])}>
-          <h1 className={p['title']}>Footer</h1>
+          <div className={p['toolbar-actions']}>
+            <button className={cx(p['btn'], p['btn-primary'], p['pull-right'])}>
+              保存
+            </button>
+            <button className={cx(p['btn'], p['btn-default'], p['pull-right'])}>
+              取消
+            </button>
+          </div>
         </footer>
       </div>
     );

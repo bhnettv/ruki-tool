@@ -33,6 +33,7 @@ export default class Videos extends Component {
       isLoadingVideoDir,
       video,
       videos,
+      videoDir,
       choseVideo,
     } = this.props;
     return (
@@ -53,8 +54,8 @@ export default class Videos extends Component {
           (
             <table className={p['table-striped']}>
               <tbody onClick={(e) => {
-                  if (!isLoadingVideo || isLoadingVideo !== e.target.innerHTML) {
-                    choseVideo(e.target.innerHTML);
+                  if (!isLoadingVideo || video !== e.target.innerHTML) {
+                    choseVideo(videoDir, e.target.innerHTML);
                   }
                 }}>
                 {videos.map((v, i) => (

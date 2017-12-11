@@ -7,3 +7,14 @@
 .form {
   padding: 10px;
 }
+
+.labels-tip {
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  height: 100%;
+}
+
+.labels-tip-text {
+
+}

@@ -23,11 +23,11 @@
  */
 
 const LABELS_AT = [
-  { value: 'ungroup', name: '未分类' },
-  { value: 'nogroup', name: '无分类' },
-  { value: 'crashme', name: '视频车事故' },
-  { value: 'crashit', name: '非视频车事故' },
-  { value: 'nocrash', name: '无事故' },
+  { value: '', name: '空', group: -1 },
+  { value: 'nogroup', name: '无分类/nogroup' },
+  { value: 'crashme', name: '视频车事故/crashme' },
+  { value: 'crashit', name: '非视频车事故/crashit' },
+  { value: 'nocrash', name: '无事故/nocrash' },
 ];
 
 const CRASHES = [
