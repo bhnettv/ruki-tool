@@ -168,6 +168,12 @@ export default class Player extends Component {
           {/* <button className={s.control} onClick={this.handleLoad}>
             <span className={cx(p['icon'], p['icon-video'])}></span>
           </button> */}
+          <button className={s.control}>
+            <span className={cx(p['icon'], p['icon-left-open'])}></span>
+          </button>
+          <button className={s.control}>
+            <span className={cx(p['icon'], p['icon-right-open'])}></span>
+          </button>
         </div>
       </div>
     );

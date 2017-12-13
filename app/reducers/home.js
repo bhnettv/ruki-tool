@@ -143,10 +143,12 @@ export default function home(state: homeStateType = {
     {
       const newState = {};
       if (action.labels && action.labelsAt) {
-        newState.labels = action.labels;
-        newState.labelsAt = action.labelsAt;
-        newState.isLoadingVideoDir = false;
+        // 异步执行成功，更新旧的labels和labelsAt
+        newState.oldLabels = action.labels;
+        newState.oldLabelsAt = action.labelsAt;
+        newState.isUpdatingLabels = false;
       } else if (action.updatingLabelsErr) {
+        // 异步执行失败
         newState.updatingLabelsErr = action.updatingLabelsErr;
         newState.isUpdatingLabels = false;
       } else {
@@ -165,8 +167,24 @@ export default function home(state: homeStateType = {
     case CLOSE_VIDEO_DIR:
     {
       const newState = {
+        videoDir: action.videoDir,
         videoDirs: state.videoDirs.filter((vDir) => vDir !== action.videoDir),
       };
+      if (action.videos) {
+        // 异步执行成功，更新videos状态
+        newState.video = state.video && action.videos.length? state.video: action.videos[0];
+        newState.videos = action.videos;
+        newState.isLoadingVideoDir = false;
+      } else if (action.loadingVideoDirErr) {
+        // 异步执行失败
+        newState.loadingVideoDirErr = action.loadingVideoDirErr;
+        newState.isLoadingVideoDir = false;
+      } else {
+        // 异步执行开始
+        newState.video = '';
+        newState.videos = [];
+        newState.isLoadingVideoDir = true;
+      }
       return {...state, ...newState};
     }
     default:

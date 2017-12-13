@@ -17,3 +17,10 @@
   /*max-width: 250px;*/
   min-width: 300px;
 }
+
+.status {
+  display: inline-block;
+  margin-left: 4px;
+  margin-right: 4px;
+  line-height: 2;
+}

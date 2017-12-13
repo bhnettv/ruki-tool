@@ -24,10 +24,10 @@
 
 const LABELS_AT = [
   { value: '', name: '原始目录', group: -1 },
-  { value: 'nogroup', name: '无分类' },
-  { value: 'crashme', name: '视频车事故' },
-  { value: 'crashit', name: '非视频车事故' },
-  { value: 'nocrash', name: '无事故' },
+  { value: 'nogroup', name: '无分类' , group: 0 },
+  { value: 'crashme', name: '视频车事故', group: 1 },
+  { value: 'crashit', name: '非视频车事故', group: 2 },
+  { value: 'nocrash', name: '无事故', group: 3 },
 ];
 
 const CRASHES = [

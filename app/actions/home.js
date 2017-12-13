@@ -4,6 +4,7 @@ import FTPClient from 'ftp';
 import path from 'path';
 import fs from 'fs';
 import config from '../config';
+import { LABELS_AT } from '../constant';
 
 type actionType = {
   +type: string
@@ -55,8 +56,7 @@ const getFileInfo = (vDir, v) => new Promise(async (resolve, reject) => {
     if (results && results[1] && results[2]) {
       // 先检查crashme目录
       let data = await getJSONData(v, path.join(
-        config.ftp.macMount,
-        'raw',
+        config.ftp.macRawMount,
         results[1],
         'crashme',
         'index.json',
@@ -65,8 +65,7 @@ const getFileInfo = (vDir, v) => new Promise(async (resolve, reject) => {
       // 如果没有，则继续检查crashit目录
       if (Object.keys(data).length === 0 && data.constructor === Object) {
         data = await getJSONData(v, path.join(
-          config.ftp.macMount,
-          'raw',
+          config.ftp.macRawMount,
           results[1],
           'crashit',
           'index.json',
@@ -76,8 +75,7 @@ const getFileInfo = (vDir, v) => new Promise(async (resolve, reject) => {
       // 如果没有，则继续检查nocrash目录
       if (Object.keys(data).length === 0 && data.constructor === Object) {
         data = await getJSONData(v, path.join(
-          config.ftp.macMount,
-          'raw',
+          config.ftp.macRawMount,
           results[1],
           'nocrash',
           'index.json',
@@ -87,8 +85,7 @@ const getFileInfo = (vDir, v) => new Promise(async (resolve, reject) => {
       // 如果没有，则继续检查nogroup目录
       if (Object.keys(data).length === 0 && data.constructor === Object) {
         data = await getJSONData(v, path.join(
-          config.ftp.macMount,
-          'raw',
+          config.ftp.macRawMount,
           results[1],
           'nogroup',
           'index.json',
@@ -162,7 +159,12 @@ const setJSONData = (v, j, vData) => new Promise((resolve, reject) => {
         const jsonData = JSON.parse(data);
         if (jsonData) {
           const name = path.basename(v, path.extname(v));
-          jsonData[name] = vData;
+          if (vData) {
+            jsonData[name] = vData;
+          } else {
+            delete jsonData[name];
+          }
+
           fs.writeFile(j, jsonData, 'utf8', (err, data) => {
             if (err) {
               reject(err);
@@ -180,10 +182,66 @@ const setJSONData = (v, j, vData) => new Promise((resolve, reject) => {
   }
 });
 
-const setFileInfo = (vDir, v, labels, labelsAt) => new Promise((resolve, reject) => {
-  // 先添加新信息
-
-  // 再删除原有信息
+const setFileInfo = (vDir, v, labels, labelsAt, oldLabelsAt) => new Promise(async (resolve, reject) => {
+  try {
+    // 获取路径
+    const regexp = new RegExp(`^(ddpai|s360)/(.+)$`);
+    const results = regexp.exec(vDir);
+    if (results && results[1] && results[2]) {
+      if (labelsAt !== '') {
+        // 如果新的视频目录不是原始目录，则添加标签信息到新目录的index.json
+        await setJSONData(v, path.join(
+          config.ftp.macRawMount,
+          results[1],
+          labelsAt,
+          'index.json',
+        ), labels);
+        // 然后复制视频文件到新目录
+        fs.copyFile(path.join(
+          config.ftp.macMount,
+          vDir,
+          v,
+        ), path.join(
+          config.ftp.macRawMount,
+          results[1],
+          labelsAt,
+          v,
+        ), async (err) => {
+          if (err) {
+            reject(err);
+          }
+          // 如果旧的视频目录不是原始目录，则旧目录的index.json标签信息
+          if (oldLabelsAt !== labelsAt && oldLabelsAt !== '') {
+            await setJSONData(v, path.join(
+              config.ftp.macRawMount,
+              results[1],
+              oldLabelsAt,
+              'index.json',
+            ), null);
+            // 然后旧目录的删除视频文件
+            fs.unlink(path.join(
+              config.ftp.macRawMount,
+              results[1],
+              oldLabelsAt,
+              v,
+            ), (err) => {
+              if (err) {
+                reject(err);
+              }
+              resolve({ message: 'ok' });
+            });
+          } else {
+            resolve({ message: 'ok' });
+          }
+        });
+      }
+    } else {
+      resolve({ message: 'invalid video directory' });
+    }
+  } catch (e) {
+    console.log(e);
+    reject(e);
+  }
 });
 
 export const CHOSE_VIDEO = 'CHOSE_VIDEO';
@@ -241,13 +299,21 @@ export const updateLabels = (labels, labelsAt) => (dispatch: (action: actionType
   dispatch({
     type: UPDATE_LABELS,
   });
-  return setTimeout(() => {
+  const { home: { videoDir, video, oldLabelsAt }} = getState();
+  return setFileInfo(videoDir, video, labels, labelsAt, oldLabelsAt)
+  .then((message) => {
     dispatch({
       type: UPDATE_LABELS,
       labels: labels,
       labelsAt: labelsAt,
     });
-  }, 1000);
+  })
+  .catch((err) => {
+    dispatch({
+      type: UPDATE_LABELS,
+      updatingLabelsErr: '超时',
+    });
+  });
 };
 
 export const editLabels = (labels, labelsAt) => {

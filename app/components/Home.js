@@ -55,8 +55,9 @@ export default class Home extends Component {
   };
 
   renderButons = (labels, oldLabels, labelsAt, oldLabelsAt) => {
-    const { editLabels } = this.props;
-    if (labelsAt !== oldLabelsAt
+    const { editLabels, updateLabels, isUpdatingLabels } = this.props;
+    if ( labelsAt
+      && (labelsAt !== oldLabelsAt
       || labels.title !== oldLabels.title
       || labels.datetime !== oldLabels.datetime
       || !this.arrayEqual(labels.coords, oldLabels.coords)
@@ -65,29 +66,42 @@ export default class Home extends Component {
       || !this.arrayEqual(labels.rules, oldLabels.rules)
       || !this.arrayEqual(labels.keywords, oldLabels.keywords)
       // || !this.arrayEqual(labels.plates, oldLabels.plates)
-    ) {
+    )) {
       return (
         <div className={p['toolbar-actions']}>
-          <button className={cx(p['btn'], p['btn-default'])}>
-            刷新
-          </button>
-          <button className={cx(p['btn'], p['btn-primary'], p['pull-right'])}>
-            保存
+          <div className={s['status']}>状态栏</div>
+          <button
+            className={cx(p['btn'], p['btn-primary'], p['pull-right'])}
+            onClick={(e) => updateLabels(labels, labelsAt)}
+          >
+            {
+              isUpdatingLabels?
+              (
+                <span>
+                  <i className="fa fa-spinner fa-spin fa-fw"></i>
+                  <span className="sr-only">加载中...</span>
+                </span>
+              ):
+              (
+                <span>
+                  保存
+                </span>
+              )
+            }
           </button>
           <button
             className={cx(p['btn'], p['btn-default'], p['pull-right'])}
             onClick={(e) => editLabels(oldLabels, oldLabelsAt)}
+            disabled={isUpdatingLabels}
           >
-            取消
+            重置
           </button>
         </div>
       );
     } else {
       return (
         <div className={p['toolbar-actions']}>
-          <button className={cx(p['btn'], p['btn-default'])}>
-            刷新
-          </button>
+          <div className={s['status']}>状态栏</div>
         </div>
       )
     }

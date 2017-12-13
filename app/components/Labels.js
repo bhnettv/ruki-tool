@@ -108,7 +108,6 @@ export default class Labels extends Component {
               <div className={p['form-group']}>
                 <label htmlFor="datetime">时间</label>
                 <input
-                  type="datetime-local"
                   className={p['form-control']}
                   name="datetime"
                   id="datetime"
