@@ -10,6 +10,7 @@ import { LABELS_AT, CRASHES, RULES, KEYWORDS } from '../constant';
 
 export default class Labels extends Component {
   props: {
+    videoDir: ?string,
     labels: ?LabelType,
     labelsAt: ?string,
     isLoadingVideo: boolean,
@@ -20,8 +21,31 @@ export default class Labels extends Component {
     editLabels: (LabelType, string) => void,
   };
 
+  renderLabelAt = (name, vDir) => {
+    const regexp = new RegExp(`^(ddpai|s360)/(.+)$`);
+    const results = regexp.exec(vDir);
+    if (!results || !results[1] || !results[2]) {
+      return name;
+    }
+    switch (name) {
+      case LABELS_AT[0].name:
+        return `${name} - ${vDir}`;
+      case LABELS_AT[1].name:
+        return `${name} - raw/${results[1]}/nogroup`;
+      case LABELS_AT[2].name:
+        return `${name} - raw/${results[1]}/crashme`;
+      case LABELS_AT[3].name:
+        return `${name} - raw/${results[1]}/crashit`;
+      case LABELS_AT[4].name:
+        return `${name} - raw/${results[1]}/nocrash`;
+      default:
+        return name;
+    }
+  }
+
   render() {
     const {
+      videoDir,
       labels,
       labelsAt,
       isLoadingVideo,
@@ -34,7 +58,7 @@ export default class Labels extends Component {
     return (
       <div className={s['container']}>
         {
-          isLoadingVideo?
+          isLoadingVideo || isLoadingVideoDir?
           (
             <div className={s['labels-tip']}>
               <div className={s['labels-tip-text']}>
@@ -54,7 +78,15 @@ export default class Labels extends Component {
                   onChange={(e) => editLabels(labels, e.target.value) }
                 >
                   {
-                    LABELS_AT.map((t) => <option key={`at-${t.value}`} value={t.value}>{t.name}</option>)
+                    LABELS_AT.map((t) =>
+                    (
+                      <option
+                        key={`at-${t.value}`}
+                        value={t.value}
+                      >
+                        {this.renderLabelAt(t.name, videoDir)}
+                      </option>
+                    ))
                   }
                 </select>
               </div>

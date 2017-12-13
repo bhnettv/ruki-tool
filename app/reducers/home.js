@@ -4,6 +4,7 @@ import {
   CHOSE_VIDEO_DIR,
   UPDATE_LABELS,
   EDIT_LABELS,
+  CLOSE_VIDEO_DIR,
 } from '../actions/home';
 
 export type LabelType = {
@@ -30,6 +31,8 @@ export type homeStateType = {
   +videoDirs: string[],
   +labels: LabelType,
   +labelsAt: string,
+  +oldLabels: LabelType,
+  +oldLabelsAt: string,
 };
 
 type actionType = {
@@ -58,19 +61,35 @@ export default function home(state: homeStateType = {
     plates: [],
   },
   labelsAt: '',
+  oldLabels: {
+    title: '',
+    datetime: '',
+    range: [0, -1],
+    coords: [],
+    crashes: [],
+    rules: [],
+    keywords: [],
+    plates: [],
+  },
+  oldLabelsAt: '',
 }, action: actionType) {
   switch (action.type) {
     case CHOSE_VIDEO:
     {
       const newState = { video: action.video };
       if (action.labels) {
+        // 异步执行成功，更新labels状态
         newState.labels = action.labels;
         newState.labelsAt = action.labelsAt;
+        newState.oldLabels = action.labels,
+        newState.oldLabelsAt = action.labelsAt;
         newState.isLoadingVideo = false;
       } else if (action.loadingVideoErr) {
+        // 异步执行失败
         newState.loadingVideoErr = action.loadingVideoErr;
         newState.isLoadingVideo = false;
       } else {
+        // 异步执行开始，重置labels状态
         newState.labels = {
           title: '',
           datetime: '',
@@ -82,6 +101,17 @@ export default function home(state: homeStateType = {
           plates: [],
         };
         newState.labelsAt = '';
+        newState.oldLabels = {
+          title: '',
+          datetime: '',
+          range: [0, -1],
+          coords: [],
+          crashes: [],
+          rules: [],
+          keywords: [],
+          plates: [],
+        };
+        newState.oldLabelsAt = '';
         newState.isLoadingVideo = true;
       }
       return {...state, ...newState};
@@ -93,13 +123,16 @@ export default function home(state: homeStateType = {
         videoDirs: state.videoDirs.indexOf(action.videoDir) === -1? [...state.videoDirs, action.videoDir]: state.videoDirs,
       };
       if (action.videos) {
+        // 异步执行成功，更新videos状态
         newState.video = state.video && action.videos.length? state.video: action.videos[0];
         newState.videos = action.videos;
         newState.isLoadingVideoDir = false;
       } else if (action.loadingVideoDirErr) {
+        // 异步执行失败
         newState.loadingVideoDirErr = action.loadingVideoDirErr;
         newState.isLoadingVideoDir = false;
       } else {
+        // 异步执行开始
         newState.video = '';
         newState.videos = [];
         newState.isLoadingVideoDir = true;
@@ -126,6 +159,13 @@ export default function home(state: homeStateType = {
       const newState = {
         labels: action.labels,
         labelsAt: action.labelsAt,
+      };
+      return {...state, ...newState};
+    }
+    case CLOSE_VIDEO_DIR:
+    {
+      const newState = {
+        videoDirs: state.videoDirs.filter((vDir) => vDir !== action.videoDir),
       };
       return {...state, ...newState};
     }

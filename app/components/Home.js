@@ -27,10 +27,13 @@ export default class Home extends Component {
     videoDirs: (?string)[],
     labels: ?LabelType,
     labelsAt: ?string,
+    oldLabels: ?LabelType,
+    oldLabelsAt: ?string,
     choseVideo: (string) => void,
     choseVideoDir: (string) => void,
     updateLabels: (LabelType, string) => void,
     editLabels: (LabelType, string) => void,
+    closeVideoDir: (string) => void,
   };
 
   // 启动时加载某个路径的视频
@@ -38,6 +41,57 @@ export default class Home extends Component {
     const { choseVideoDir } = this.props;
     choseVideoDir('ddpai/ddpai_t6_c0_l1');
   }
+
+  arrayEqual = (a, b) => {
+    if (a.length !== b.length) {
+      return false;
+    }
+    for (let i = 0; i < a.length; i+=1) {
+      if (a[i] !== b[i]) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  renderButons = (labels, oldLabels, labelsAt, oldLabelsAt) => {
+    const { editLabels } = this.props;
+    if (labelsAt !== oldLabelsAt
+      || labels.title !== oldLabels.title
+      || labels.datetime !== oldLabels.datetime
+      || !this.arrayEqual(labels.coords, oldLabels.coords)
+      || !this.arrayEqual(labels.range, oldLabels.range)
+      || !this.arrayEqual(labels.crashes, oldLabels.crashes)
+      || !this.arrayEqual(labels.rules, oldLabels.rules)
+      || !this.arrayEqual(labels.keywords, oldLabels.keywords)
+      // || !this.arrayEqual(labels.plates, oldLabels.plates)
+    ) {
+      return (
+        <div className={p['toolbar-actions']}>
+          <button className={cx(p['btn'], p['btn-default'])}>
+            刷新
+          </button>
+          <button className={cx(p['btn'], p['btn-primary'], p['pull-right'])}>
+            保存
+          </button>
+          <button
+            className={cx(p['btn'], p['btn-default'], p['pull-right'])}
+            onClick={(e) => editLabels(oldLabels, oldLabelsAt)}
+          >
+            取消
+          </button>
+        </div>
+      );
+    } else {
+      return (
+        <div className={p['toolbar-actions']}>
+          <button className={cx(p['btn'], p['btn-default'])}>
+            刷新
+          </button>
+        </div>
+      )
+    }
+  };
 
   render() {
     const {
@@ -53,10 +107,13 @@ export default class Home extends Component {
       videoDir,
       labels,
       labelsAt,
+      oldLabels,
+      oldLabelsAt,
       choseVideo,
       choseVideoDir,
       updateLabels,
       editLabels,
+      closeVideoDir,
     } = this.props;
     return (
       <div className={p['window']}>
@@ -74,7 +131,10 @@ export default class Home extends Component {
                   }
                 }}
               >
-                <span className={cx(p['icon'], p['icon-cancel'], p['icon-close-tab'])}></span>
+                <span
+                  className={cx(p['icon'], p['icon-cancel'], p['icon-close-tab'])}
+                  // onClick={() => closeVideoDir(vd)}
+                ></span>
                 {
                   vd === videoDir && isLoadingVideoDir?
                   (
@@ -123,6 +183,7 @@ export default class Home extends Component {
             </div>
             <div className={cx(p['sidebar'], s['pane-labels'])}>
               <Labels
+                videoDir={videoDir}
                 labels={labels}
                 labelsAt={labelsAt}
                 isLoadingVideoDir={isLoadingVideoDir}
@@ -136,14 +197,9 @@ export default class Home extends Component {
           </div>
         </div>
         <footer className={cx(p['toolbar'], p['toolbar-footer'])}>
-          <div className={p['toolbar-actions']}>
-            <button className={cx(p['btn'], p['btn-primary'], p['pull-right'])}>
-              保存
-            </button>
-            <button className={cx(p['btn'], p['btn-default'], p['pull-right'])}>
-              取消
-            </button>
-          </div>
+          {
+            this.renderButons(labels, oldLabels, labelsAt, oldLabelsAt)
+          }
         </footer>
       </div>
     );

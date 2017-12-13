@@ -121,6 +121,7 @@ export default class Player extends Component {
   componentWillReceiveProps (nextProps) {
     if (nextProps.videoDir &&
       nextProps.video &&
+      this.mpv &&
       this.props.video !== nextProps.video
     ) {
         this.mpv.command("loadfile", path.join(config.ftp.macMount, nextProps.videoDir, nextProps.video));
@@ -150,9 +151,9 @@ export default class Player extends Component {
               <span className={cx(p['icon'], p['icon-play'])}></span> :
               <span className={cx(p['icon'], p['icon-pause'])}></span>}
           </button>
-          <button className={s.control} onClick={this.handleStop}>
+          {/* <button className={s.control} onClick={this.handleStop}>
               <span className={cx(p['icon'], p['icon-stop'])}></span>
-          </button>
+          </button> */}
           <input
             className={s.seek}
             type="range"
@@ -164,9 +165,9 @@ export default class Player extends Component {
             onMouseDown={this.handleSeekMouseDown}
             onMouseUp={this.handleSeekMouseUp}
           />
-          <button className={s.control} onClick={this.handleLoad}>
+          {/* <button className={s.control} onClick={this.handleLoad}>
             <span className={cx(p['icon'], p['icon-video'])}></span>
-          </button>
+          </button> */}
         </div>
       </div>
     );

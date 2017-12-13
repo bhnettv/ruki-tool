@@ -9,80 +9,39 @@ type actionType = {
   +type: string
 };
 
-const client = new FTPClient;
-const listDirs = (parent) => new Promise((resolve, reject) => {
-  client.list(parent, async (err, dirs) => {
-    if (err) reject(err);
-    for (let dir of dirs) {
-      if (dir.type === 'd') {
-        dir.children = await listDirs(path.join(parent, dir.name));
-      }
-    }
-    const data = dirs.map(dir => ({ name: dir.name, children: dir.children }));
-    resolve(data);
-  });
-});
-const getDirsTree = (rt) => new Promise((resolve, reject) => {
-  client.on('ready', async () => {
-    const data = {
-      name: rt,
-      toggled: true,
-      children: await listDirs(path.join(config.ftp.path, rt)),
-    };
-    resolve(data);
-    client.end();
-  });
-  client.on('error', err => reject(err));
-  client.connect({
-    host: config.ftp.host,
-    user: config.ftp.user,
-    password: config.ftp.pass,
-    keepalive: 999999999,
-  });
-});
-
 const getDirFiles = (vDir) => new Promise((resolve, reject) => {
-  client.on('ready', async () => {
-    client.list(path.join(config.ftp.path, vDir), async (err, files) => {
-      if (err) reject(err);
-      const data = [];
-      if (files) {
-        for (let file of files) {
-          if (file.name.endsWith('.mp4') ||
-            file.name.endsWith('.mkv') ||
-            file.name.endsWith('.avi')
-          ) {
-            data.push(file.name);
-          }
-        }
-      }
-      resolve(data);
-      client.end();
-    });
-  });
-  client.on('error', err => reject(err));
-  client.connect({
-    host: config.ftp.host,
-    user: config.ftp.user,
-    password: config.ftp.pass,
-    keepalive: 999999999,
+  fs.readdir(path.join(config.ftp.macMount, vDir), (err, files) => {
+    if (err) reject(err);
+    const videoFiles = files.filter(file =>
+      (
+        file.endsWith('.mp4') ||
+        file.endsWith('.mkv') ||
+        file.endsWith('.avi') ||
+        file.endsWith('.mov')
+      )
+    );
+    resolve(videoFiles);
   });
 });
 
 const getJSONData = (v, j) => new Promise((resolve, reject) => {
   try {
-    if (fs.existsSync(j)) {
-      const data = fs.readFileSync(j, 'utf8');
-      const jsonData = JSON.parse(data);
-      const name = path.basename(v, path.extname(v));
-      if (jsonData && jsonData[name]) {
-        resolve(jsonData[name]);
-      } else {
-        resolve({});
+    fs.readFile(j, 'utf8', (err, data) => {
+      if (err) {
+        reject(err);
       }
-    } else {
-      resolve({});
-    }
+      if (!data) {
+        resolve({});
+      } else {
+        const jsonData = JSON.parse(data);
+        const name = path.basename(v, path.extname(v));
+        if (jsonData && jsonData[name]) {
+          resolve(jsonData[name]);
+        } else {
+          resolve({});
+        }
+      }
+    });
   } catch (e) {
     reject(e);
   }
@@ -143,6 +102,7 @@ const getFileInfo = (vDir, v) => new Promise(async (resolve, reject) => {
           vDir,
           'index.json',
         ));
+        data.title = data.des;
         dataAt = '';
       }
       // 返回结果
@@ -161,9 +121,18 @@ const getFileInfo = (vDir, v) => new Promise(async (resolve, reject) => {
           labelsAt: '',
         });
       } else {
+        // 类型检查
+        data.title = data.title? String(data.title): '';
+        data.datetime = data.datetime? String(data.datetime): '';
+        data.range = data.range && data.range.length === 2? data.range.map(r => parseInt(r)): [0, -1];
+        data.coords = data.coords && data.coords.length === 2? data.coords.map(c => parseFloat(c)): [];
+        data.crashes = data.crashes && data.crashes.length > 0? data.crashes.map(c => String(c)): [];
+        data.rules = data.rules && data.rules.length > 0? data.rules.map(r => String(r)): [];
+        data.keywords && data.keywords.length > 0? data.keywords.map(k => String(k)): [];
+        data.plates && data.plates.length > 0? data.plates.map(p => String(p)): [];
         resolve({
           labels: {
-            title: data.des || '',
+            title: data.title || '',
             datetime: data.datetime || '',
             range: data.range || [0, -1],
             coords: data.coords || [],
@@ -181,10 +150,47 @@ const getFileInfo = (vDir, v) => new Promise(async (resolve, reject) => {
   }
 });
 
+const setJSONData = (v, j, vData) => new Promise((resolve, reject) => {
+  try {
+    fs.readFile(j, 'utf8', (err, data) => {
+      if (err) {
+        reject(err);
+      }
+      if (!data) {
+        resolve({ message: 'invalid json file' });
+      } else {
+        const jsonData = JSON.parse(data);
+        if (jsonData) {
+          const name = path.basename(v, path.extname(v));
+          jsonData[name] = vData;
+          fs.writeFile(j, jsonData, 'utf8', (err, data) => {
+            if (err) {
+              reject(err);
+            }
+            resolve({ message: 'ok' });
+          });
+          resolve({ message: 'ok' });
+        } else {
+          resolve({ message: 'empty json file' });
+        }
+      }
+    });
+  } catch (e) {
+    reject(e);
+  }
+});
+
+const setFileInfo = (vDir, v, labels, labelsAt) => new Promise((resolve, reject) => {
+  // 先添加新信息
+
+  // 再删除原有信息
+});
+
 export const CHOSE_VIDEO = 'CHOSE_VIDEO';
 export const CHOSE_VIDEO_DIR = 'CHOSE_VIDEO_DIR';
 export const UPDATE_LABELS = 'UPDATE_LABELS';
 export const EDIT_LABELS = 'EDIT_LABELS';
+export const CLOSE_VIDEO_DIR = 'CLOSE_VIDEO_DIR';
 
 export const choseVideo = (videoDir, video) => (dispatch: (action: actionType) => void, getState: () => homeStateType) => {
   dispatch({
@@ -200,6 +206,13 @@ export const choseVideo = (videoDir, video) => (dispatch: (action: actionType) =
       labelsAt: info.labelsAt,
     })
   })
+  .catch((err) => {
+    dispatch({
+      type: CHOSE_VIDEO,
+      video: video,
+      loadingVideoErr: '超时',
+    });
+  });
 }
 
 export const choseVideoDir = (videoDir) => (dispatch: (action: actionType) => void, getState: () => homeStateType) => {
@@ -244,3 +257,25 @@ export const editLabels = (labels, labelsAt) => {
     labelsAt: labelsAt,
   };
 }
+
+export const closeVideoDir = (videoDir) => (dispatch: (action: actionType) => void, getState: () => homeStateType) => {
+  dispatch({
+    type: CLOSE_VIDEO_DIR,
+    videoDir: videoDir,
+  });
+  return getDirFiles(videoDir)
+  .then((files) => {
+    dispatch({
+      type: CLOSE_VIDEO_DIR,
+      videoDir: videoDir,
+      videos: files,
+    });
+  })
+  .catch((err) => {
+    dispatch({
+      type: CLOSE_VIDEO_DIR,
+      videoDir: videoDir,
+      loadingVideoDirErr: '超时',
+    });
+  });
+};
