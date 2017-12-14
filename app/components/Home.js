@@ -190,9 +190,11 @@ export default class Home extends Component {
               <Player
                 videoDir={videoDir}
                 video={video}
+                labels={labels}
+                labelsAt={labelsAt}
                 isLoadingVideoDir={isLoadingVideoDir}
                 isLoadingVideo={isLoadingVideo}
-                updateLabels={updateLabels}
+                editLabels={editLabels}
               />
             </div>
             <div className={cx(p['sidebar'], s['pane-labels'])}>

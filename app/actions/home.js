@@ -13,7 +13,8 @@ type actionType = {
 const getDirFiles = (vDir) => new Promise((resolve, reject) => {
   fs.readdir(path.join(config.ftp.macMount, vDir), (err, files) => {
     if (err) reject(err);
-    const videoFiles = files.filter(file =>
+    // 过滤非视频文件
+    const filterFiles = files.filter(file =>
       (
         file.endsWith('.mp4') ||
         file.endsWith('.mkv') ||
@@ -21,7 +22,13 @@ const getDirFiles = (vDir) => new Promise((resolve, reject) => {
         file.endsWith('.mov')
       )
     );
-    resolve(videoFiles);
+    // 降序排序
+    const sortFiles = filterFiles.sort((aFile, bFile) => {
+      const aName = path.basename(aFile, path.extname(aFile));
+      const bName = path.basename(bFile, path.extname(bFile));
+      return bName - aName;
+    });
+    resolve(sortFiles);
   });
 });
 
@@ -121,7 +128,7 @@ const getFileInfo = (vDir, v) => new Promise(async (resolve, reject) => {
         // 类型检查
         data.title = data.title? String(data.title): '';
         data.datetime = data.datetime? String(data.datetime): '';
-        data.range = data.range && data.range.length === 2? data.range.map(r => parseInt(r)): [0, -1];
+        data.range = data.range && data.range.length === 2? data.range.map(r => parseFloat(r)): [0, -1];
         data.coords = data.coords && data.coords.length === 2? data.coords.map(c => parseFloat(c)): [];
         data.crashes = data.crashes && data.crashes.length > 0? data.crashes.map(c => String(c)): [];
         data.rules = data.rules && data.rules.length > 0? data.rules.map(r => String(r)): [];
@@ -164,8 +171,7 @@ const setJSONData = (v, j, vData) => new Promise((resolve, reject) => {
           } else {
             delete jsonData[name];
           }
-
-          fs.writeFile(j, jsonData, 'utf8', (err, data) => {
+          fs.writeFile(j, JSON.stringify(jsonData), 'utf8', (err, data) => {
             if (err) {
               reject(err);
             }
@@ -190,29 +196,31 @@ const setFileInfo = (vDir, v, labels, labelsAt, oldLabelsAt) => new Promise(asyn
     if (results && results[1] && results[2]) {
       if (labelsAt !== '') {
         // 如果新的视频目录不是原始目录，则添加标签信息到新目录的index.json
-        await setJSONData(v, path.join(
+        const newMsg = await setJSONData(v, path.join(
           config.ftp.macRawMount,
           results[1],
           labelsAt,
           'index.json',
         ), labels);
         // 然后复制视频文件到新目录
-        fs.copyFile(path.join(
+        const rd = fs.createReadStream(
+          path.join(
           config.ftp.macMount,
           vDir,
           v,
-        ), path.join(
+        ));
+        const wr = fs.createWriteStream(
+          path.join(
           config.ftp.macRawMount,
           results[1],
           labelsAt,
           v,
-        ), async (err) => {
-          if (err) {
-            reject(err);
-          }
-          // 如果旧的视频目录不是原始目录，则旧目录的index.json标签信息
+        ));
+        wr.on('error', (err) => reject(err))
+        wr.on('close', async () => {
           if (oldLabelsAt !== labelsAt && oldLabelsAt !== '') {
-            await setJSONData(v, path.join(
+            // 如果旧的视频目录不是原始目录，则旧目录的index.json标签信息
+            const oldMsg = await setJSONData(v, path.join(
               config.ftp.macRawMount,
               results[1],
               oldLabelsAt,
@@ -234,6 +242,7 @@ const setFileInfo = (vDir, v, labels, labelsAt, oldLabelsAt) => new Promise(asyn
             resolve({ message: 'ok' });
           }
         });
+        rd.pipe(wr);
       }
     } else {
       resolve({ message: 'invalid video directory' });

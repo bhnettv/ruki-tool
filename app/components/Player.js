@@ -8,13 +8,17 @@ import s from './Player.css';
 import p from '../photon/dist/css/photon.css';
 import cx from 'classnames';
 import config from '../config';
+import type { LabelType } from '../reducers/home';
 
 export default class Player extends Component {
   props: {
+    labels: ?LabelType,
+    labelsAt: ?string,
     isLoadingVideo: boolean,
     isLoadingVideoDir: boolean,
     video: ?string,
     videoDir: ?string,
+    editLabels: (LabelType, string) => void,
   };
 
   constructor(props) {
@@ -129,6 +133,9 @@ export default class Player extends Component {
   }
   render() {
     const {
+      labels,
+      labelsAt,
+      editLabels,
       isLoadingVideo,
       isLoadingVideoDir,
       video,
@@ -168,10 +175,26 @@ export default class Player extends Component {
           {/* <button className={s.control} onClick={this.handleLoad}>
             <span className={cx(p['icon'], p['icon-video'])}></span>
           </button> */}
-          <button className={s.control}>
+          <button
+            className={labels.range[1] === -1 || labels.range[1] > this.state['time-pos']? s.control: cx(s.control, s.disabled)}
+            disabled={!(labels.range[1] === -1 || labels.range[1] > this.state['time-pos'])}
+            onClick={e => {
+              const newValue = parseFloat(Number(this.state['time-pos']).toFixed(3));
+              const newLabels = { range: [newValue, labels.range[1]] };
+              editLabels({...labels, ...newLabels}, labelsAt);
+            }}
+          >
             <span className={cx(p['icon'], p['icon-left-open'])}></span>
           </button>
-          <button className={s.control}>
+          <button
+            className={labels.range[0] === 0 || this.state['time-pos'] > labels.range[0]? s.control: cx(s.control, s.disabled)}
+            disabled={!(labels.range[0] === 0 || this.state['time-pos'] > labels.range[0])}
+            onClick={e => {
+              const newValue = parseFloat(Number(this.state['time-pos']).toFixed(3));
+              const newLabels = { range: [labels.range[0], newValue] };
+              editLabels({...labels,...newLabels}, labelsAt);
+            }}
+          >
             <span className={cx(p['icon'], p['icon-right-open'])}></span>
           </button>
         </div>

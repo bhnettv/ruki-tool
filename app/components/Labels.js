@@ -18,7 +18,6 @@ export default class Labels extends Component {
     isUpdatingLabels: boolean,
     updatingLabelsErr: ?string,
     editLabels: (LabelType, string) => void,
-    editLabels: (LabelType, string) => void,
   };
 
   renderLabelAt = (name, vDir) => {
@@ -140,7 +139,7 @@ export default class Labels extends Component {
                   className={p['form-control']}
                   name="range"
                   id="range"
-                  value={labels.range}
+                  value={`${labels.range[0]}, ${labels.range[1]}`}
                   disabled
                   placeholder="[0, -1]"
                 />
