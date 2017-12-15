@@ -11,6 +11,7 @@ import FTPClient from 'ftp';
 import config from '../config';
 import path from 'path';
 import type { LabelType } from '../reducers/home';
+import type { NoteType } from '../reducers/home';
 import { ipcRenderer } from 'electron';
 
 export default class Home extends Component {
@@ -21,6 +22,8 @@ export default class Home extends Component {
     loadingVideoDirErr: ?string,
     isUpdatingLabels: boolean,
     updatingLabelsErr: ?string,
+    isUpdatingNote: boolean,
+    updatingNoteErr: ?string,
     video: ?string,
     videoDir: ?string,
     videos: (?string)[],
@@ -29,11 +32,13 @@ export default class Home extends Component {
     labelsAt: ?string,
     oldLabels: ?LabelType,
     oldLabelsAt: ?string,
+    notes: any,
     choseVideo: (string) => void,
     choseVideoDir: (string) => void,
     updateLabels: (LabelType, string) => void,
     editLabels: (LabelType, string) => void,
     closeVideoDir: (string) => void,
+    updateNote: (string, string, NoteType) => void,
   };
 
   // 启动时加载某个路径的视频
@@ -55,7 +60,14 @@ export default class Home extends Component {
   };
 
   renderButons = (labels, oldLabels, labelsAt, oldLabelsAt) => {
-    const { editLabels, updateLabels, isUpdatingLabels } = this.props;
+    const {
+      editLabels,
+      updateLabels,
+      isUpdatingLabels,
+      updateNote,
+      videoDir,
+      video,
+    } = this.props;
     if ( labelsAt
       && (labelsAt !== oldLabelsAt
       || labels.title !== oldLabels.title
@@ -69,10 +81,15 @@ export default class Home extends Component {
     )) {
       return (
         <div className={p['toolbar-actions']}>
-          <div className={s['status']}>状态栏</div>
+          <div className={s['status']}>
+            {`路径：${path.join(config.ftp.macMount, videoDir, video)}`}
+          </div>
           <button
             className={cx(p['btn'], p['btn-primary'], p['pull-right'])}
-            onClick={(e) => updateLabels(labels, labelsAt)}
+            onClick={(e) => {
+              updateLabels(labels, labelsAt);
+              updateNote(videoDir, video, { color: labelsAt });
+            }}
           >
             {
               isUpdatingLabels?
@@ -101,7 +118,9 @@ export default class Home extends Component {
     } else {
       return (
         <div className={p['toolbar-actions']}>
-          <div className={s['status']}>状态栏</div>
+          <div className={s['status']}>
+            {`路径：${path.join(config.ftp.macMount, videoDir, video)}`}
+          </div>
         </div>
       )
     }
@@ -115,6 +134,8 @@ export default class Home extends Component {
       loadingVideoDirErr,
       isUpdatingLabels,
       updatingLabelsErr,
+      isUpdatingNote,
+      updatingNoteErr,
       videos,
       videoDirs,
       video,
@@ -123,11 +144,13 @@ export default class Home extends Component {
       labelsAt,
       oldLabels,
       oldLabelsAt,
+      notes,
       choseVideo,
       choseVideoDir,
       updateLabels,
       editLabels,
       closeVideoDir,
+      updateNote,
     } = this.props;
     return (
       <div className={p['window']}>
@@ -181,9 +204,11 @@ export default class Home extends Component {
                 videos={videos}
                 video={video}
                 videoDir={videoDir}
+                notes={notes}
                 isLoadingVideo={isLoadingVideo}
                 isLoadingVideoDir={isLoadingVideoDir}
                 choseVideo={choseVideo}
+                updateNote={updateNote}
               />
             </div>
             <div className={p['pane']}>

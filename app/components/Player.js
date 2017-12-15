@@ -161,6 +161,9 @@ export default class Player extends Component {
           {/* <button className={s.control} onClick={this.handleStop}>
               <span className={cx(p['icon'], p['icon-stop'])}></span>
           </button> */}
+          <div className={cx(s.control, s.time)}>
+            {`${parseInt(this.state['time-pos'])} / ${parseInt(this.state['duration'])}`}
+          </div>
           <input
             className={s.seek}
             type="range"

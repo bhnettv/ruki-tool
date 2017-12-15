@@ -30,12 +30,10 @@ export default class Labels extends Component {
       case LABELS_AT[0].name:
         return `${name} - ${vDir}`;
       case LABELS_AT[1].name:
-        return `${name} - raw/${results[1]}/nogroup`;
-      case LABELS_AT[2].name:
         return `${name} - raw/${results[1]}/crashme`;
-      case LABELS_AT[3].name:
+      case LABELS_AT[2].name:
         return `${name} - raw/${results[1]}/crashit`;
-      case LABELS_AT[4].name:
+      case LABELS_AT[3].name:
         return `${name} - raw/${results[1]}/nocrash`;
       default:
         return name;

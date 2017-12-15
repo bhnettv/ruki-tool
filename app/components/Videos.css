@@ -7,6 +7,27 @@
 
 .active {
   font-weight: bold;
+  color: #000!important;
+}
+
+.seen {
+  background-color: #dddddd!important;
+  color: #fff;
+}
+
+.crashme {
+  background-color: #fd918d!important;
+  color: #fff;
+}
+
+.crashit {
+  background-color: #fece72!important;
+  color: #fff;
+}
+
+.nocrash {
+  background-color: #5bd46d!important;
+  color: #fff;
 }
 
 .videos-tip {

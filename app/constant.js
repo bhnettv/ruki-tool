@@ -24,10 +24,9 @@
 
 const LABELS_AT = [
   { value: '', name: '原始目录', group: -1 },
-  { value: 'nogroup', name: '无分类' , group: 0 },
-  { value: 'crashme', name: '视频车事故', group: 1 },
-  { value: 'crashit', name: '非视频车事故', group: 2 },
-  { value: 'nocrash', name: '无事故', group: 3 },
+  { value: 'crashme', name: '视频车事故', group: 0 },
+  { value: 'crashit', name: '非视频车事故', group: 1 },
+  { value: 'nocrash', name: '无事故', group: 2 },
 ];
 
 const CRASHES = [
@@ -39,8 +38,8 @@ const CRASHES = [
   { value: '撞非机动车', name: '与非机动车发生碰撞', group: 1 },
   { value: '撞行人', name: '与行人发生碰撞', group: 1 },
   { value: '撞固定物', name: '与固定障碍物发生碰撞', group: 1 },
-  { value: '目击现场', name: '第一视角的碰撞', group: 2 },
-  { value: '亲身经历', name: '第三视角的碰撞', group: 2 },
+  { value: '亲身经历', name: '第一视角的碰撞', group: 2 },
+  { value: '目击现场', name: '第三视角的碰撞', group: 2 },
   { value: '其他事故', name: '其他交通事故', group: 3 },
 ];
 

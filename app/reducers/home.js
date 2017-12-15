@@ -5,7 +5,9 @@ import {
   UPDATE_LABELS,
   EDIT_LABELS,
   CLOSE_VIDEO_DIR,
+  UPDATE_NOTE,
 } from '../actions/home';
+import path from 'path';
 
 export type LabelType = {
   title: string,
@@ -18,6 +20,10 @@ export type LabelType = {
   plates: (?string)[],
 }
 
+export type NoteType = {
+  color: string,
+}
+
 export type homeStateType = {
   +isLoadingVideo: boolean,
   +loadingVideoErr: string,
@@ -25,6 +31,8 @@ export type homeStateType = {
   +loadingVideoDirErr: string,
   +isUpdatingLabels: boolean,
   +updatingLabelsErr: string,
+  +isUpdatingNote: boolean,
+  +updatingNoteErr: string,
   +video: string,
   +videoDir: string,
   +videos: string[],
@@ -33,6 +41,7 @@ export type homeStateType = {
   +labelsAt: string,
   +oldLabels: LabelType,
   +oldLabelsAt: string,
+  +notes: any,
 };
 
 type actionType = {
@@ -46,6 +55,8 @@ export default function home(state: homeStateType = {
   loadingVideoDirErr: '',
   isUpdatingLabels: false,
   updatingLabelsErr: '',
+  isUpdatingNote: false,
+  updatingNoteErr: '',
   video: '',
   videoDir: '',
   videos: [],
@@ -72,6 +83,7 @@ export default function home(state: homeStateType = {
     plates: [],
   },
   oldLabelsAt: '',
+  notes: {},
 }, action: actionType) {
   switch (action.type) {
     case CHOSE_VIDEO:
@@ -122,10 +134,11 @@ export default function home(state: homeStateType = {
         videoDir: action.videoDir,
         videoDirs: state.videoDirs.indexOf(action.videoDir) === -1? [...state.videoDirs, action.videoDir]: state.videoDirs,
       };
-      if (action.videos) {
+      if (action.videos && action.notes) {
         // 异步执行成功，更新videos状态
         newState.video = state.video && action.videos.length? state.video: action.videos[0];
         newState.videos = action.videos;
+        newState.notes = action.notes;
         newState.isLoadingVideoDir = false;
       } else if (action.loadingVideoDirErr) {
         // 异步执行失败
@@ -184,6 +197,25 @@ export default function home(state: homeStateType = {
         newState.video = '';
         newState.videos = [];
         newState.isLoadingVideoDir = true;
+      }
+      return {...state, ...newState};
+    }
+    case UPDATE_NOTE:
+    {
+      const newState = {};
+      if (action.note && action.name) {
+        // 异步执行成功，更新notes
+        const newNotes = {};
+        newNotes[action.name] = action.note;
+        newState.notes = {...state.notes, ...newNotes};
+        newState.isLoadingVideoDir = false;
+      } else if (action.updatingNoteErr) {
+        // 异步执行失败
+        newState.updatingNoteErr = action.updatingNoteErr;
+        newState.isUpdatingNote = false;
+      } else {
+        // 异步执行开始
+        newState.isUpdatingNote = true;
       }
       return {...state, ...newState};
     }

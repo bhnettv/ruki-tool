@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom';
 import s from './Videos.css';
 import p from '../photon/dist/css/photon.css';
 import cx from 'classnames';
+import type { NoteType } from '../reducers/home';
+import path from 'path';
 
 export default class Videos extends Component {
   props: {
@@ -12,7 +14,9 @@ export default class Videos extends Component {
     video: ?string,
     videos: (?string)[],
     videoDir: ?string,
+    notes: any,
     choseVideo: (string) => void,
+    updateNote: (string, string, NoteType) => void,
   };
 
   componentDidMount() {
@@ -23,15 +27,16 @@ export default class Videos extends Component {
   }
   // 键盘按键监听
   handleKeyDown = (e) => {
-    e.preventDefault();
     const { video, videos, choseVideo, videoDir } = this.props;
     if (e.key === "ArrowDown") {
+      e.preventDefault();
       const index = videos.indexOf(video);
       if (index !== -1) {
         const newIndex = (index < videos.length - 1)? index + 1: index;
         choseVideo(videoDir, videos[newIndex]);
       }
     } else if (e.key === "ArrowUp") {
+      e.preventDefault();
       const index = videos.indexOf(video);
       if (index !== -1) {
         const newIndex = index > 0? index - 1: index;
@@ -39,6 +44,47 @@ export default class Videos extends Component {
       }
     } else {
       // nothing to do
+    }
+  };
+
+  renderVideoClassName = (v, video, notes) => {
+    const name = path.basename(v, path.extname(v));
+    if (v === video) {
+      // 被选中的条目
+      if (!notes[name] || !notes[name]['color']) {
+        // 被选中但没有记录的条目
+        return s['active'];
+      }
+      if (notes[name]['color'] === 'seen') {
+        return cx(s['active'], s['seen']);
+      } else if (notes[name]['color'] === 'crashme') {
+        return cx(s['active'], s['crashme']);
+      } else if (notes[name]['color'] === 'crashit') {
+        return cx(s['active'], s['crashit']);
+      } else if (notes[name]['color'] === 'nocrash') {
+        return cx(s['active'], s['nocrash']);
+      } else {
+        // 被选中有记录但不考虑的条目
+        return s['active'];
+      }
+    } else {
+      // 没被选中的条目
+      if (!notes[name] || !notes[name]['color']) {
+        // 没被选中但没有记录的条目
+        return '';
+      }
+      if (notes[name]['color'] === 'seen') {
+        return s['seen'];
+      } else if (notes[name]['color'] === 'crashme') {
+        return s['crashme'];
+      } else if (notes[name]['color'] === 'crashit') {
+        return s['crashit'];
+      } else if (notes[name]['color'] === 'nocrash') {
+        return s['nocrash'];
+      } else {
+        // 没被选中有记录但不考虑的条目
+        return '';
+      }
     }
   };
 
@@ -50,6 +96,8 @@ export default class Videos extends Component {
       videos,
       videoDir,
       choseVideo,
+      updateNote,
+      notes
     } = this.props;
     return (
       <div
@@ -71,12 +119,13 @@ export default class Videos extends Component {
               <tbody onClick={(e) => {
                   if (!isLoadingVideo || video !== e.target.innerHTML) {
                     choseVideo(videoDir, e.target.innerHTML);
+                    updateNote(videoDir, e.target.innerHTML, { color: 'seen' });
                   }
                 }}>
                 {videos.map((v, i) => (
                   <tr
                     key={`v-${i}`}
-                    className={v === video? s['active']: ''}
+                    className={this.renderVideoClassName(v, video, notes)}
                   >
                     {
                       v === video && isLoadingVideo?

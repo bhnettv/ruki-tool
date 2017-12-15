@@ -10,8 +10,62 @@ type actionType = {
   +type: string
 };
 
+const getNotes = (vDir) => new Promise((resolve, reject) => {
+  const notePath = path.join(config.ftp.macMount, vDir, 'note.json');
+  fs.readFile(notePath, 'utf8', (err, data) => {
+    if (err || !data) {
+      // 如果文件不存在则默认为空
+      resolve({});
+    } else {
+      const jsonData = JSON.parse(data);
+      if (jsonData) {
+        resolve(jsonData);
+      } else {
+        resolve({});
+      }
+    }
+  });
+});
+
+const setNote = (vDir, v, note) => new Promise((resolve, reject) => {
+  const notePath = path.join(config.ftp.macMount, vDir, 'note.json');
+  const name = path.basename(v, path.extname(v));
+  fs.readFile(notePath, 'utf8', (err, data) => {
+    if (err) {
+      // 记录文件不存在，则创建新的
+      const jsonData = {};
+      jsonData[name] = note;
+      fs.writeFile(notePath, JSON.stringify(jsonData), 'utf8', (err) => {
+        if (err) {
+          reject(err);
+        }
+        resolve({ message: 'ok' });
+      });
+    } else {
+      // 记录文件存在
+      if (!data) {
+        resolve({ message: 'invalid json file' });
+      } else {
+        const jsonData = JSON.parse(data);
+        if (jsonData) {
+          jsonData[name] = note;
+          fs.writeFile(notePath, JSON.stringify(jsonData), 'utf8', (err) => {
+            if (err) {
+              reject(err);
+            }
+            resolve({ message: 'ok' });
+          });
+        } else {
+          resolve({ message: 'empty json file' });
+        }
+      }
+    }
+  });
+
+});
+
 const getDirFiles = (vDir) => new Promise((resolve, reject) => {
-  fs.readdir(path.join(config.ftp.macMount, vDir), (err, files) => {
+  fs.readdir(path.join(config.ftp.macMount, vDir), async (err, files) => {
     if (err) reject(err);
     // 过滤非视频文件
     const filterFiles = files.filter(file =>
@@ -28,31 +82,29 @@ const getDirFiles = (vDir) => new Promise((resolve, reject) => {
       const bName = path.basename(bFile, path.extname(bFile));
       return bName - aName;
     });
-    resolve(sortFiles);
+    // 分类记录，用于渲染记录颜色
+    const notes = await getNotes(vDir);
+    resolve({ videos: sortFiles, notes: notes });
   });
 });
 
 const getJSONData = (v, j) => new Promise((resolve, reject) => {
-  try {
-    fs.readFile(j, 'utf8', (err, data) => {
-      if (err) {
-        reject(err);
-      }
-      if (!data) {
-        resolve({});
+  fs.readFile(j, 'utf8', (err, data) => {
+    if (err) {
+      reject(err);
+    }
+    if (!data) {
+      resolve({});
+    } else {
+      const jsonData = JSON.parse(data);
+      const name = path.basename(v, path.extname(v));
+      if (jsonData && jsonData[name]) {
+        resolve(jsonData[name]);
       } else {
-        const jsonData = JSON.parse(data);
-        const name = path.basename(v, path.extname(v));
-        if (jsonData && jsonData[name]) {
-          resolve(jsonData[name]);
-        } else {
-          resolve({});
-        }
+        resolve({});
       }
-    });
-  } catch (e) {
-    reject(e);
-  }
+    }
+  });
 });
 
 const getFileInfo = (vDir, v) => new Promise(async (resolve, reject) => {
@@ -88,16 +140,6 @@ const getFileInfo = (vDir, v) => new Promise(async (resolve, reject) => {
           'index.json',
         ));
         dataAt = 'nocrash';
-      }
-      // 如果没有，则继续检查nogroup目录
-      if (Object.keys(data).length === 0 && data.constructor === Object) {
-        data = await getJSONData(v, path.join(
-          config.ftp.macRawMount,
-          results[1],
-          'nogroup',
-          'index.json',
-        ));
-        dataAt = 'nogroup';
       }
       // 还是没有，则继续检查原始目录
       if (Object.keys(data).length === 0 && data.constructor === Object) {
@@ -155,37 +197,33 @@ const getFileInfo = (vDir, v) => new Promise(async (resolve, reject) => {
 });
 
 const setJSONData = (v, j, vData) => new Promise((resolve, reject) => {
-  try {
-    fs.readFile(j, 'utf8', (err, data) => {
-      if (err) {
-        reject(err);
-      }
-      if (!data) {
-        resolve({ message: 'invalid json file' });
-      } else {
-        const jsonData = JSON.parse(data);
-        if (jsonData) {
-          const name = path.basename(v, path.extname(v));
-          if (vData) {
-            jsonData[name] = vData;
-          } else {
-            delete jsonData[name];
-          }
-          fs.writeFile(j, JSON.stringify(jsonData), 'utf8', (err, data) => {
-            if (err) {
-              reject(err);
-            }
-            resolve({ message: 'ok' });
-          });
-          resolve({ message: 'ok' });
+  fs.readFile(j, 'utf8', (err, data) => {
+    if (err) {
+      reject(err);
+    }
+    if (!data) {
+      resolve({ message: 'invalid json file' });
+    } else {
+      const jsonData = JSON.parse(data);
+      if (jsonData) {
+        const name = path.basename(v, path.extname(v));
+        if (vData) {
+          jsonData[name] = vData;
         } else {
-          resolve({ message: 'empty json file' });
+          delete jsonData[name];
         }
+        fs.writeFile(j, JSON.stringify(jsonData), 'utf8', (err) => {
+          if (err) {
+            reject(err);
+          }
+          resolve({ message: 'ok' });
+        });
+        resolve({ message: 'ok' });
+      } else {
+        resolve({ message: 'empty json file' });
       }
-    });
-  } catch (e) {
-    reject(e);
-  }
+    }
+  });
 });
 
 const setFileInfo = (vDir, v, labels, labelsAt, oldLabelsAt) => new Promise(async (resolve, reject) => {
@@ -258,6 +296,7 @@ export const CHOSE_VIDEO_DIR = 'CHOSE_VIDEO_DIR';
 export const UPDATE_LABELS = 'UPDATE_LABELS';
 export const EDIT_LABELS = 'EDIT_LABELS';
 export const CLOSE_VIDEO_DIR = 'CLOSE_VIDEO_DIR';
+export const UPDATE_NOTE = 'UPDATE_NOTE';
 
 export const choseVideo = (videoDir, video) => (dispatch: (action: actionType) => void, getState: () => homeStateType) => {
   dispatch({
@@ -288,11 +327,12 @@ export const choseVideoDir = (videoDir) => (dispatch: (action: actionType) => vo
     videoDir: videoDir,
   });
   return getDirFiles(videoDir)
-  .then((files) => {
+  .then((data) => {
     dispatch({
       type: CHOSE_VIDEO_DIR,
       videoDir: videoDir,
-      videos: files,
+      videos: data.videos,
+      notes: data.notes,
     });
   })
   .catch((err) => {
@@ -354,3 +394,24 @@ export const closeVideoDir = (videoDir) => (dispatch: (action: actionType) => vo
     });
   });
 };
+
+export const updateNote = (videoDir, video, note) => (dispatch: (action: actionType) => void, getState: () => homeStateType) => {
+  dispatch({
+    type: UPDATE_NOTE,
+  });
+  return setNote(videoDir, video, note)
+  .then(() => {
+    dispatch({
+      type: UPDATE_NOTE,
+      name: path.basename(video, path.extname(video)),
+      note: note,
+    });
+  })
+  .catch((err) => {
+    console.log(err.message);
+    dispatch({
+      type: UPDATE_NOTE,
+      updatingNoteErr: '超时',
+    });
+  });
+}
