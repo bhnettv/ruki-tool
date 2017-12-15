@@ -15,17 +15,32 @@ export default class Videos extends Component {
     choseVideo: (string) => void,
   };
 
-  // componentDidMount() {
-  //   this.container.addEventListener("keydown", this.handleKeyDown, false);
-  // }
-  // componentWillUnmount() {
-  //   this.container.removeEventListener("keydown", this.handleKeyDown, false);
-  // }
-  // // 键盘按键监听
-  // handleKeyDown = (e) => {
-  //   console.log(e.key);
-  //   e.preventDefault();
-  // };
+  componentDidMount() {
+    document.addEventListener("keydown", this.handleKeyDown, false);
+  }
+  componentWillUnmount() {
+    document.removeEventListener("keydown", this.handleKeyDown, false);
+  }
+  // 键盘按键监听
+  handleKeyDown = (e) => {
+    e.preventDefault();
+    const { video, videos, choseVideo, videoDir } = this.props;
+    if (e.key === "ArrowDown") {
+      const index = videos.indexOf(video);
+      if (index !== -1) {
+        const newIndex = (index < videos.length - 1)? index + 1: index;
+        choseVideo(videoDir, videos[newIndex]);
+      }
+    } else if (e.key === "ArrowUp") {
+      const index = videos.indexOf(video);
+      if (index !== -1) {
+        const newIndex = index > 0? index - 1: index;
+        choseVideo(videoDir, videos[newIndex]);
+      }
+    } else {
+      // nothing to do
+    }
+  };
 
   render() {
     const {

@@ -39,7 +39,7 @@ export default class Home extends Component {
   // 启动时加载某个路径的视频
   componentDidMount () {
     const { choseVideoDir } = this.props;
-    choseVideoDir('ddpai/ddpai_t6_c0_l1');
+    choseVideoDir('ddpai/ddpai_t30_c1_l1');
   }
 
   arrayEqual = (a, b) => {

@@ -117,6 +117,19 @@ export default class Labels extends Component {
                   }}
                   placeholder="2017-12-7 11:30:30"
                 />
+                {/* <Datetime
+                  className={p['form-datetime']}
+                  name="datetime"
+                  id="datetime"
+                  value={labels.datetime}
+                  dateFormat="YYYY-MM-DD"
+                  timeFormat="HH:mm:ss"
+                  onChange={(data) => {
+                    console.log(data)
+                    // const newLabels = { datetime: e.target.value };
+                    // editLabels({...labels, ...newLabels}, labelsAt);
+                  }}
+                /> */}
               </div>
               <div className={p['form-group']}>
                 <label htmlFor="coords">地点</label>

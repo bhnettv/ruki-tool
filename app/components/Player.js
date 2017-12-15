@@ -52,7 +52,7 @@ export default class Player extends Component {
     e.preventDefault();
     if (e.key === "f" || (e.key === "Escape" && this.state.fullscreen)) {
       this.toggleFullscreen();
-    } else if (this.state.duration) {
+    } else if (e.key !== "ArrowUp" && e.key !== "ArrowDown" && this.state.duration) {
       this.mpv.keypress(e);
     }
   }
