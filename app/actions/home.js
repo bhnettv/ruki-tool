@@ -231,6 +231,14 @@ const setFileInfo = (vDir, v, labels, labelsAt, oldLabelsAt) => new Promise(asyn
     // 获取路径
     const regexp = new RegExp(`^(ddpai|s360)/(.+)$`);
     const results = regexp.exec(vDir);
+    // 范围检查
+    if (labels.coords.length === 2
+      && (labels.coords[0] <= 0
+        || labels.coords[0] > 180
+        || labels.coords[1] <= 0
+        || labels.coords[2] > 90)) {
+      labels.coords = [];
+    }
     if (results && results[1] && results[2]) {
       if (labelsAt !== '') {
         // 如果新的视频目录不是原始目录，则添加标签信息到新目录的index.json
@@ -408,7 +416,6 @@ export const updateNote = (videoDir, video, note) => (dispatch: (action: actionT
     });
   })
   .catch((err) => {
-    console.log(err.message);
     dispatch({
       type: UPDATE_NOTE,
       updatingNoteErr: '超时',

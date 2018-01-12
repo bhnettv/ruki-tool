@@ -56,12 +56,16 @@ export default class Videos extends Component {
         return s['active'];
       }
       if (notes[name]['color'] === 'seen') {
+        // 看过的为灰色背景
         return cx(s['active'], s['seen']);
       } else if (notes[name]['color'] === 'crashme') {
+        // 第一视角事故为红色
         return cx(s['active'], s['crashme']);
       } else if (notes[name]['color'] === 'crashit') {
+        // 第三视角事故为黄色
         return cx(s['active'], s['crashit']);
       } else if (notes[name]['color'] === 'nocrash') {
+        // 无事故为绿色
         return cx(s['active'], s['nocrash']);
       } else {
         // 被选中有记录但不考虑的条目
@@ -117,9 +121,17 @@ export default class Videos extends Component {
           (
             <table className={p['table-striped']}>
               <tbody onClick={(e) => {
-                  if (!isLoadingVideo || video !== e.target.innerHTML) {
+                  const v = e.target.innerHTML;
+                  if (v && v.endsWith('.mp4') && (!isLoadingVideo || video !== v)) {
                     choseVideo(videoDir, e.target.innerHTML);
-                    updateNote(videoDir, e.target.innerHTML, { color: 'seen' });
+                    const name = path.basename(v, path.extname(v));
+                    if (!notes[name]
+                      || (notes[name]
+                      && notes[name]['color'] !== 'crashme'
+                      && notes[name]['color'] !== 'crashit'
+                      && notes[name]['color'] !== 'nocrash')) {
+                      updateNote(videoDir, v, { color: 'seen' });
+                    }
                   }
                 }}>
                 {videos.map((v, i) => (

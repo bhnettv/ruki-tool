@@ -208,7 +208,7 @@ export default function home(state: homeStateType = {
         const newNotes = {};
         newNotes[action.name] = action.note;
         newState.notes = {...state.notes, ...newNotes};
-        newState.isLoadingVideoDir = false;
+        newState.isUpdatingNote = false;
       } else if (action.updatingNoteErr) {
         // 异步执行失败
         newState.updatingNoteErr = action.updatingNoteErr;
