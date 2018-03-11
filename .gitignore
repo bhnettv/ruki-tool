@@ -51,3 +51,8 @@ main.js.map
 
 .idea
 npm-debug.log.*
+
+.vscode
+
+# 除外
+!app/photon/dist

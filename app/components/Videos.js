@@ -106,7 +106,7 @@ export default class Videos extends Component {
     return (
       <div
         className={s['container']}
-        ref={(input) => { this.container = input; }}
+        //ref={(input) => { this.container = input; }}
       >
         {
           isLoadingVideoDir?

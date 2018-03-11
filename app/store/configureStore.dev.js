@@ -4,13 +4,11 @@ import { createHashHistory } from 'history';
 import { routerMiddleware, routerActions } from 'react-router-redux';
 import { createLogger } from 'redux-logger';
 import rootReducer from '../reducers';
-import * as counterActions from '../actions/counter';
-import type { counterStateType } from '../reducers/counter';
 import * as homeActions from '../actions/home';
 import type { homeStateType } from '../reducers/home';
 
 const history = createHashHistory();
-type initialStateType = homeStateType | counterStateType;
+type initialStateType = homeStateType ;
 
 const configureStore = (initialState?: initialStateType) => {
   // Redux Configuration
@@ -33,7 +31,7 @@ const configureStore = (initialState?: initialStateType) => {
 
   // Redux DevTools Configuration
   const actionCreators = {
-    ...counterActions,
+    ...homeActions,
     ...routerActions,
   };
   // If Redux DevTools Extension is installed use it, otherwise use Redux compose

@@ -42,10 +42,10 @@ export default class Player extends Component {
     this.handleLoad = this.handleLoad.bind(this);
   }
   componentDidMount() {
-    this.container.addEventListener("keydown", this.handleKeyDown, false);
+    this.player.addEventListener("keydown", this.handleKeyDown, false);
   }
   componentWillUnmount() {
-    this.container.removeEventListener("keydown", this.handleKeyDown, false);
+    this.player.removeEventListener("keydown", this.handleKeyDown, false);
   }
   // 键盘按键监听，除了f和esc，其他按键按照mpv处理
   handleKeyDown(e) {
@@ -144,7 +144,7 @@ export default class Player extends Component {
     return (
       <div
         className={s.container}
-        ref={(input) => { this.container = input; }}
+        ref={(input) => { this.player = input; }}
       >
         <ReactMPV
           className={s.player}

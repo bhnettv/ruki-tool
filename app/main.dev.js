@@ -19,9 +19,11 @@ import config from './config';
 let mainWindow = null;
 
 // Absolute path to the plugin directory.
-const pluginDir = path.join(path.dirname(require.resolve("mpv.js")), "build", "Release");
+// const pluginDir = path.join(path.dirname(require.resolve("mpv.js")), "build", "Release");
+const pluginDir = process.env.NODE_ENV === 'production' ? path.join(__dirname, '../app.asar.unpacked', 'mpv') : path.join(__dirname, 'mpv');
+
 // See pitfalls section for details.
-if (process.platform !== "linux") {process.chdir(pluginDir);}
+// if (process.platform !== "linux") {process.chdir(pluginDir);}
 // To support a broader number of systems.
 app.commandLine.appendSwitch("ignore-gpu-blacklist");
 app.commandLine.appendSwitch("register-pepper-plugins", getPluginEntry(pluginDir));
