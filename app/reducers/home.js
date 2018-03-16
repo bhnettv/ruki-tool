@@ -1,13 +1,13 @@
 // @flow
 import {
   CHOSE_VIDEO,
+  CHOSE_VIDEO_MORE,
   CHOSE_VIDEO_DIR,
   UPDATE_LABELS,
   EDIT_LABELS,
   CLOSE_VIDEO_DIR,
   UPDATE_NOTE,
 } from '../actions/home';
-import path from 'path';
 
 export type LabelType = {
   title: string,
@@ -18,15 +18,17 @@ export type LabelType = {
   rules: (?string)[],
   keywords: (?string)[],
   plates: (?string)[],
-}
+};
 
 export type NoteType = {
   color: string,
-}
+};
 
 export type homeStateType = {
   +isLoadingVideo: boolean,
   +loadingVideoErr: string,
+  +isLoadingVideoMore: boolean,
+  +loadingVideoMoreErr: string,
   +isLoadingVideoDir: boolean,
   +loadingVideoDirErr: string,
   +isUpdatingLabels: boolean,
@@ -51,6 +53,8 @@ type actionType = {
 export default function home(state: homeStateType = {
   isLoadingVideo: false,
   loadingVideoErr: '',
+  isLoadingVideoMore: false,
+  loadingVideoMoreErr: '',
   isLoadingVideoDir: false,
   loadingVideoDirErr: '',
   isUpdatingLabels: false,
@@ -93,7 +97,7 @@ export default function home(state: homeStateType = {
         // 异步执行成功，更新labels状态
         newState.labels = action.labels;
         newState.labelsAt = action.labelsAt;
-        newState.oldLabels = action.labels,
+        newState.oldLabels = action.labels;
         newState.oldLabelsAt = action.labelsAt;
         newState.isLoadingVideo = false;
       } else if (action.loadingVideoErr) {
@@ -126,17 +130,34 @@ export default function home(state: homeStateType = {
         newState.oldLabelsAt = '';
         newState.isLoadingVideo = true;
       }
-      return {...state, ...newState};
+      return { ...state, ...newState };
+    }
+    case CHOSE_VIDEO_MORE:
+    {
+      const newState = { };
+      if (action.videos) {
+        // 异步执行成功，更新videos状态
+        newState.videos = [...state.videos, ...action.videos];
+        newState.isLoadingVideoMore = false;
+      } else if (action.loadingVideoMoreErr) {
+        // 异步执行失败
+        newState.loadingVideoMoreErr = action.loadingVideoMoreErr;
+        newState.isLoadingVideoMore = false;
+      } else {
+        // 异步执行开始
+        newState.isLoadingVideoMore = true;
+      }
+      return { ...state, ...newState };
     }
     case CHOSE_VIDEO_DIR:
     {
       const newState = {
         videoDir: action.videoDir,
-        videoDirs: state.videoDirs.indexOf(action.videoDir) === -1? [...state.videoDirs, action.videoDir]: state.videoDirs,
+        videoDirs: state.videoDirs.indexOf(action.videoDir) === -1 ? [...state.videoDirs, action.videoDir] : state.videoDirs,
       };
       if (action.videos && action.notes) {
         // 异步执行成功，更新videos状态
-        newState.video = state.video && action.videos.length? state.video: action.videos[0];
+        newState.video = state.video && action.videos.length ? state.video : action.videos[0];
         newState.videos = action.videos;
         newState.notes = action.notes;
         newState.isLoadingVideoDir = false;
@@ -150,7 +171,7 @@ export default function home(state: homeStateType = {
         newState.videos = [];
         newState.isLoadingVideoDir = true;
       }
-      return {...state, ...newState};
+      return { ...state, ...newState };
     }
     case UPDATE_LABELS:
     {
@@ -167,7 +188,7 @@ export default function home(state: homeStateType = {
       } else {
         newState.isUpdatingLabels = true;
       }
-      return {...state, ...newState};
+      return { ...state, ...newState };
     }
     case EDIT_LABELS:
     {
@@ -175,7 +196,7 @@ export default function home(state: homeStateType = {
         labels: action.labels,
         labelsAt: action.labelsAt,
       };
-      return {...state, ...newState};
+      return { ...state, ...newState };
     }
     case CLOSE_VIDEO_DIR:
     {
@@ -185,7 +206,7 @@ export default function home(state: homeStateType = {
       };
       if (action.videos) {
         // 异步执行成功，更新videos状态
-        newState.video = state.video && action.videos.length? state.video: action.videos[0];
+        newState.video = state.video && action.videos.length ? state.video : action.videos[0];
         newState.videos = action.videos;
         newState.isLoadingVideoDir = false;
       } else if (action.loadingVideoDirErr) {
@@ -198,7 +219,7 @@ export default function home(state: homeStateType = {
         newState.videos = [];
         newState.isLoadingVideoDir = true;
       }
-      return {...state, ...newState};
+      return { ...state, ...newState };
     }
     case UPDATE_NOTE:
     {
@@ -207,7 +228,7 @@ export default function home(state: homeStateType = {
         // 异步执行成功，更新notes
         const newNotes = {};
         newNotes[action.name] = action.note;
-        newState.notes = {...state.notes, ...newNotes};
+        newState.notes = { ...state.notes, ...newNotes };
         newState.isUpdatingNote = false;
       } else if (action.updatingNoteErr) {
         // 异步执行失败
@@ -217,7 +238,7 @@ export default function home(state: homeStateType = {
         // 异步执行开始
         newState.isUpdatingNote = true;
       }
-      return {...state, ...newState};
+      return { ...state, ...newState };
     }
     default:
       return state;

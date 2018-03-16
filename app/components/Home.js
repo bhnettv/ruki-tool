@@ -1,23 +1,24 @@
 // @flow
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import cx from 'classnames';
+import { ipcRenderer } from 'electron';
+import path from 'path';
 import s from './Home.css';
 import p from '../photon/dist/css/photon.css';
 import Player from './Player';
 import Labels from './Labels';
 import Videos from './Videos';
-import cx from 'classnames';
-import FTPClient from 'ftp';
 import config from '../config';
-import path from 'path';
-import type { LabelType } from '../reducers/home';
-import type { NoteType } from '../reducers/home';
-import { ipcRenderer } from 'electron';
+import type { LabelType, NoteType } from '../reducers/home';
+
 
 export default class Home extends Component {
   props: {
     isLoadingVideo: boolean,
     loadingVideoErr: ?string,
+    isLoadingVideoMore: boolean,
+    loadingVideoMoreErr: ?string,
     isLoadingVideoDir: boolean,
     loadingVideoDirErr: ?string,
     isUpdatingLabels: boolean,
@@ -34,6 +35,7 @@ export default class Home extends Component {
     oldLabelsAt: ?string,
     notes: any,
     choseVideo: (string) => void,
+    choseVideoMore: (string) => void,
     choseVideoDir: (string) => void,
     updateLabels: (LabelType, string) => void,
     editLabels: (LabelType, string) => void,
@@ -42,7 +44,7 @@ export default class Home extends Component {
   };
 
   // 启动时加载某个路径的视频
-  componentDidMount () {
+  componentDidMount() {
     const { choseVideoDir } = this.props;
     choseVideoDir('ddpai/ddpai_t30_c1_l1');
   }
@@ -51,7 +53,7 @@ export default class Home extends Component {
     if (a.length !== b.length) {
       return false;
     }
-    for (let i = 0; i < a.length; i+=1) {
+    for (let i = 0; i < a.length; i += 1) {
       if (a[i] !== b[i]) {
         return false;
       }
@@ -68,7 +70,7 @@ export default class Home extends Component {
       videoDir,
       video,
     } = this.props;
-    if ( labelsAt
+    if (labelsAt
       && (labelsAt !== oldLabelsAt
       || labels.title !== oldLabels.title
       || labels.datetime !== oldLabels.datetime
@@ -86,19 +88,19 @@ export default class Home extends Component {
           </div>
           <button
             className={cx(p['btn'], p['btn-primary'], p['pull-right'])}
-            onClick={(e) => {
+            onClick={() => {
               updateLabels(labels, labelsAt);
               updateNote(videoDir, video, { color: labelsAt });
             }}
           >
             {
-              isUpdatingLabels?
+              isUpdatingLabels ?
               (
                 <span>
-                  <i className="fa fa-spinner fa-spin fa-fw"></i>
+                  <i className="fa fa-spinner fa-spin fa-fw" />
                   <span className="sr-only">加载中...</span>
                 </span>
-              ):
+              ) :
               (
                 <span>
                   保存
@@ -130,6 +132,8 @@ export default class Home extends Component {
     const {
       isLoadingVideo,
       loadingVideoErr,
+      isLoadingVideoMore,
+      loadingVideoMoreErr,
       isLoadingVideoDir,
       loadingVideoDirErr,
       isUpdatingLabels,
@@ -146,6 +150,7 @@ export default class Home extends Component {
       oldLabelsAt,
       notes,
       choseVideo,
+      choseVideoMore,
       choseVideoDir,
       updateLabels,
       editLabels,
@@ -161,7 +166,7 @@ export default class Home extends Component {
             videoDirs.map((vd) => (
               <div
                 key={`t-${vd}`}
-                className={vd === videoDir? cx(p['tab-item'], p['active']): p['tab-item']}
+                className={vd === videoDir ? cx(p['tab-item'], p['active']) : p['tab-item']}
                 onClick={(e) => {
                   if (!isLoadingVideoDir || vd !== videoDir) {
                     choseVideoDir(e.target.childNodes[1].innerHTML);
@@ -173,10 +178,10 @@ export default class Home extends Component {
                   // onClick={() => closeVideoDir(vd)}
                 ></span>
                 {
-                  vd === videoDir && isLoadingVideoDir?
+                  vd === videoDir && isLoadingVideoDir ?
                   (
                     <span>
-                      <i className="fa fa-spinner fa-spin fa-fw"></i>
+                      <i className="fa fa-spinner fa-spin fa-fw" />
                       <span className="sr-only">加载中...</span>
                     </span>
                   ):
@@ -199,7 +204,7 @@ export default class Home extends Component {
         </div>
         <div className={p['window-content']} data-tid="container">
           <div className={p['pane-group']}>
-            <div className={cx(p['pane-sm'], p['sidebar'], p['padded-bottom-more'])}>
+            <div className={cx(p['pane-sm'], p['sidebar'], p['padded-bottom-more'], s['pane-videos'])}>
               <Videos
                 videos={videos}
                 video={video}
@@ -207,7 +212,9 @@ export default class Home extends Component {
                 notes={notes}
                 isLoadingVideo={isLoadingVideo}
                 isLoadingVideoDir={isLoadingVideoDir}
+                isLoadingVideoMore={isLoadingVideoMore}
                 choseVideo={choseVideo}
+                choseVideoMore={choseVideoMore}
                 updateNote={updateNote}
               />
             </div>

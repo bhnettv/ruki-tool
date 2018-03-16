@@ -14,8 +14,11 @@
 }
 
 .pane-labels {
-  /*max-width: 250px;*/
   min-width: 300px;
+}
+
+.pane-videos {
+  min-width: 100px !important;
 }
 
 .status {

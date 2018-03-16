@@ -1,21 +1,22 @@
 // @flow
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import cx from 'classnames';
 import s from './Videos.css';
 import p from '../photon/dist/css/photon.css';
-import cx from 'classnames';
 import type { NoteType } from '../reducers/home';
-import path from 'path';
 
 export default class Videos extends Component {
   props: {
     isLoadingVideo: boolean,
+    isLoadingVideoMore: boolean,
     isLoadingVideoDir: boolean,
     video: ?string,
     videos: (?string)[],
     videoDir: ?string,
     notes: any,
     choseVideo: (string) => void,
+    choseVideoMore: (string) => void,
     updateNote: (string, string, NoteType) => void,
   };
 
@@ -48,43 +49,42 @@ export default class Videos extends Component {
   };
 
   renderVideoClassName = (v, video, notes) => {
-    const name = path.basename(v, path.extname(v));
     if (v === video) {
       // 被选中的条目
-      if (!notes[name] || !notes[name]['color']) {
+      if (!notes[v] || !notes[v].color) {
         // 被选中但没有记录的条目
-        return s['active'];
+        return s.active;
       }
-      if (notes[name]['color'] === 'seen') {
+      if (notes[v].color === 'seen') {
         // 看过的为灰色背景
-        return cx(s['active'], s['seen']);
-      } else if (notes[name]['color'] === 'crashme') {
+        return cx(s.active, s.seen);
+      } else if (notes[v].color === 'crashme') {
         // 第一视角事故为红色
-        return cx(s['active'], s['crashme']);
-      } else if (notes[name]['color'] === 'crashit') {
+        return cx(s.active, s.crashme);
+      } else if (notes[v].color === 'crashit') {
         // 第三视角事故为黄色
-        return cx(s['active'], s['crashit']);
-      } else if (notes[name]['color'] === 'nocrash') {
+        return cx(s.active, s.crashit);
+      } else if (notes[v].color === 'nocrash') {
         // 无事故为绿色
-        return cx(s['active'], s['nocrash']);
+        return cx(s.active, s.nocrash);
       } else {
         // 被选中有记录但不考虑的条目
-        return s['active'];
+        return s.active;
       }
     } else {
       // 没被选中的条目
-      if (!notes[name] || !notes[name]['color']) {
+      if (!notes[v] || !notes[v].color) {
         // 没被选中但没有记录的条目
         return '';
       }
-      if (notes[name]['color'] === 'seen') {
-        return s['seen'];
-      } else if (notes[name]['color'] === 'crashme') {
-        return s['crashme'];
-      } else if (notes[name]['color'] === 'crashit') {
-        return s['crashit'];
-      } else if (notes[name]['color'] === 'nocrash') {
-        return s['nocrash'];
+      if (notes[v].color === 'seen') {
+        return s.seen;
+      } else if (notes[v].color === 'crashme') {
+        return s.crashme;
+      } else if (notes[v].color === 'crashit') {
+        return s.crashit;
+      } else if (notes[v].color === 'nocrash') {
+        return s.nocrash;
       } else {
         // 没被选中有记录但不考虑的条目
         return '';
@@ -92,10 +92,32 @@ export default class Videos extends Component {
     }
   };
 
+  renderLoader = () => {
+    const {
+      isLoadingVideoDir,
+      isLoadingVideoMore,
+      videoDir,
+      videos,
+      choseVideoMore,
+    } = this.props;
+    return (
+      <div
+        className={s['videos-tip']}
+        onClick={() => {
+          const video = videos[videos.length - 1];
+          choseVideoMore(videoDir, video, 100);
+        }}
+      >
+        <div className={s['videos-tip-text']}>
+          {isLoadingVideoDir || isLoadingVideoMore ? '加载中..' : '加载更多'}
+        </div>
+      </div>
+    );
+  };
+
   render() {
     const {
       isLoadingVideo,
-      isLoadingVideoDir,
       video,
       videos,
       videoDir,
@@ -104,66 +126,43 @@ export default class Videos extends Component {
       notes
     } = this.props;
     return (
-      <div
-        className={s['container']}
-        //ref={(input) => { this.container = input; }}
-      >
-        {
-          isLoadingVideoDir?
-          (
-            <div className={s['videos-tip']}>
-              <div className={s['videos-tip-text']}>
-                加载中...
-              </div>
-            </div>
-          ):
-          videos.length > 0?
-          (
-            <table className={p['table-striped']}>
-              <tbody onClick={(e) => {
-                  const v = e.target.innerHTML;
-                  if (v && v.endsWith('.mp4') && (!isLoadingVideo || video !== v)) {
-                    choseVideo(videoDir, e.target.innerHTML);
-                    const name = path.basename(v, path.extname(v));
-                    if (!notes[name]
-                      || (notes[name]
-                      && notes[name]['color'] !== 'crashme'
-                      && notes[name]['color'] !== 'crashit'
-                      && notes[name]['color'] !== 'nocrash')) {
-                      updateNote(videoDir, v, { color: 'seen' });
-                    }
-                  }
-                }}>
-                {videos.map((v, i) => (
-                  <tr
-                    key={`v-${i}`}
-                    className={this.renderVideoClassName(v, video, notes)}
-                  >
-                    {
-                      v === video && isLoadingVideo?
-                      (
-                        <td>
-                          <i className="fa fa-spinner fa-spin fa-fw"></i>
-                          <span className="sr-only">加载中...</span>
-                        </td>
-                      ):
-                      (
-                        <td>{v}</td>
-                      )
-                    }
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ):
-          (
-            <div className={s['videos-tip']}>
-              <div className={s['videos-tip-text']}>
-                没有数据
-              </div>
-            </div>
-          )
-        }
+      <div className={s['container']}>
+        <table className={p['table-striped']}>
+          <tbody onClick={(e) => {
+            const v = e.target.innerHTML;
+            if (v && v.match(/^\d+$/) && (!isLoadingVideo || video !== v)) {
+              choseVideo(videoDir, e.target.innerHTML);
+              if (!notes[v]
+                || (notes[v]
+                && notes[v].color !== 'crashme'
+                && notes[v].color !== 'crashit'
+                && notes[v].color !== 'nocrash')) {
+                updateNote(videoDir, v, { color: 'seen' });
+              }
+            }
+          }}>
+            {videos.map((v, i) => (
+              <tr
+                key={`v-${i}`}
+                className={this.renderVideoClassName(v, video, notes)}
+              >
+                {
+                  v === video && isLoadingVideo ?
+                  (
+                    <td>
+                      <i className="fa fa-spinner fa-spin fa-fw" />
+                      <span className="sr-only">加载中...</span>
+                    </td>
+                  ) :
+                  (
+                    <td>{v}</td>
+                  )
+                }
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {this.renderLoader()}
       </div>
     );
   }

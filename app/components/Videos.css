@@ -35,8 +35,8 @@
   align-items: center;
   display: flex;
   height: 100%;
+  min-height: 20px;
 }
 
 .videos-tip-text {
-
 }
