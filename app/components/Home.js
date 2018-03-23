@@ -9,31 +9,47 @@ import p from '../photon/dist/css/photon.css';
 import Player from './Player';
 import Labels from './Labels';
 import Videos from './Videos';
-import { getMediaPath } from '../config';
+import { getMediaPath, setUserPath } from '../config';
 import type { LabelType, NoteType } from '../reducers/home';
 
 
 export default class Home extends Component {
   props: {
+    // 加载视频
     isLoadingVideo: boolean,
     loadingVideoErr: ?string,
+    // 加载更多视频
     isLoadingVideoMore: boolean,
     loadingVideoMoreErr: ?string,
+    // 加载视频路径
     isLoadingVideoDir: boolean,
     loadingVideoDirErr: ?string,
+    // 更新视频标注信息
     isUpdatingLabels: boolean,
     updatingLabelsErr: ?string,
+    // 更新视频注释信息
     isUpdatingNote: boolean,
     updatingNoteErr: ?string,
+    // 自动识别视频标注信息的时间
+    isScaningDateTime: boolean,
+    scaningDateTimeErr: ?string,
+    // 当前选中的视频
     video: ?string,
+    // 当前选中的视频路径
     videoDir: ?string,
+    // 当前选中的视频路径下显示的视频
     videos: (?string)[],
+    // 加载过的视频路径
     videoDirs: (?string)[],
+    // 修改后的视频标注信息
     labels: ?LabelType,
     labelsAt: ?string,
+    // 修改前的视频标注信息
     oldLabels: ?LabelType,
     oldLabelsAt: ?string,
+    // 注释信息
     notes: any,
+    // Ations
     choseVideo: (string) => void,
     choseVideoMore: (string) => void,
     choseVideoDir: (string) => void,
@@ -41,12 +57,13 @@ export default class Home extends Component {
     editLabels: (LabelType, string) => void,
     closeVideoDir: (string) => void,
     updateNote: (string, string, NoteType) => void,
+    scanDateTime: (string, string) => void,
   };
 
-  // 启动时加载某个路径的视频
   componentDidMount() {
-    // const { choseVideoDir } = this.props;
-    // choseVideoDir('ddpai/ddpai_t30_c1_l1');
+    // 启动时加载某个路径的视频
+    ipcRenderer.send('get-userPath');
+    ipcRenderer.on('return-userPath', (event, param) => setUserPath(param));
   }
 
   arrayEqual = (a, b) => {
@@ -61,8 +78,12 @@ export default class Home extends Component {
     return true;
   };
 
-  renderButons = (labels, oldLabels, labelsAt, oldLabelsAt) => {
+  renderButtons = () => {
     const {
+      labels,
+      labelsAt,
+      oldLabels,
+      oldLabelsAt,
       editLabels,
       updateLabels,
       isUpdatingLabels,
@@ -124,129 +145,74 @@ export default class Home extends Component {
             {`路径：${path.join(getMediaPath(), videoDir, video)}`}
           </div>
         </div>
-      )
+      );
     }
   };
 
-  render() {
+  renderTabs = () => {
     const {
-      isLoadingVideo,
-      loadingVideoErr,
-      isLoadingVideoMore,
-      loadingVideoMoreErr,
       isLoadingVideoDir,
       loadingVideoDirErr,
-      isUpdatingLabels,
-      updatingLabelsErr,
-      isUpdatingNote,
-      updatingNoteErr,
-      videos,
       videoDirs,
-      video,
       videoDir,
-      labels,
-      labelsAt,
-      oldLabels,
-      oldLabelsAt,
-      notes,
-      choseVideo,
-      choseVideoMore,
       choseVideoDir,
-      updateLabels,
-      editLabels,
       closeVideoDir,
-      updateNote,
     } = this.props;
     return (
-      <div className={p['window']}>
-        <div className={p['tab-group']}>
-          {
-            videoDirs.map((vd) => (
-              <div
-                key={`t-${vd}`}
-                className={vd === videoDir ? cx(p['tab-item'], p['active']) : p['tab-item']}
-                onClick={(e) => {
-                  if (!isLoadingVideoDir || vd !== videoDir) {
-                    choseVideoDir(e.target.childNodes[1].innerHTML);
-                  }
-                }}
-              >
-                <span
-                  className={cx(p['icon'], p['icon-cancel'], p['icon-close-tab'])}
-                  onClick={() => closeVideoDir(vd)}
-                />
-                {
-                  vd === videoDir && isLoadingVideoDir ?
-                  (
-                    <span>
-                      <i className="fa fa-spinner fa-spin fa-fw" />
-                      <span className="sr-only">加载中...</span>
-                    </span>
-                  ) :
-                  (
-                    <span>{vd}</span>
-                  )
+      <div className={p['tab-group']}>
+        {
+          videoDirs.map((vd) => (
+            <div
+              key={`t-${vd}`}
+              className={vd === videoDir ? cx(p['tab-item'], p['active']) : p['tab-item']}
+              onClick={(e) => {
+                if (!isLoadingVideoDir || vd !== videoDir) {
+                  choseVideoDir(e.target.childNodes[1].innerHTML);
                 }
-              </div>
-            ))
-          }
-          <div
-            className={cx(p['tab-item'], p['tab-item-fixed'])}
-            onClick={() => {
-              ipcRenderer.send('open-file-dialog');
-              ipcRenderer.on('selected-directory', (event, param) => choseVideoDir(path.join(param.root, param.sub)));
-            }}
-          >
-            <span className={cx(p['icon'], p['icon-plus'])} />
-          </div>
-        </div>
+              }}
+            >
+              <span
+                className={cx(p['icon'], p['icon-cancel'], p['icon-close-tab'])}
+                onClick={() => closeVideoDir(vd)}
+              />
+              {
+                vd === videoDir && isLoadingVideoDir ?
+                (
+                  <span>
+                    <i className="fa fa-spinner fa-spin fa-fw" />
+                    <span className="sr-only">加载中...</span>
+                  </span>
+                ) :
+                (
+                  <span>{vd}</span>
+                )
+              }
+            </div>
+          ))
+        }
+        <div
+          className={cx(p['tab-item'], p['tab-item-fixed'])}
+          onClick={() => {
+            ipcRenderer.send('open-file-dialog');
+            ipcRenderer.on('selected-directory', (event, param) => choseVideoDir(path.join(param.root, param.sub)));
+          }}
+        ><span className={cx(p['icon'], p['icon-plus'])} /></div>
+      </div>
+    );
+  };
+
+  render() {
+    return (
+      <div className={p['window']}>
+        {this.renderTabs()}
         <div className={p['window-content']} data-tid="container">
           <div className={p['pane-group']}>
-            <div className={cx(p['pane-sm'], p['sidebar'], p['padded-bottom-more'], s['pane-videos'])}>
-              <Videos
-                videos={videos}
-                video={video}
-                videoDir={videoDir}
-                notes={notes}
-                isLoadingVideo={isLoadingVideo}
-                isLoadingVideoDir={isLoadingVideoDir}
-                isLoadingVideoMore={isLoadingVideoMore}
-                choseVideo={choseVideo}
-                choseVideoMore={choseVideoMore}
-                updateNote={updateNote}
-              />
-            </div>
-            <div className={p['pane']}>
-              <Player
-                videoDir={videoDir}
-                video={video}
-                labels={labels}
-                labelsAt={labelsAt}
-                isLoadingVideoDir={isLoadingVideoDir}
-                isLoadingVideo={isLoadingVideo}
-                editLabels={editLabels}
-              />
-            </div>
-            <div className={cx(p['sidebar'], s['pane-labels'])}>
-              <Labels
-                videoDir={videoDir}
-                labels={labels}
-                labelsAt={labelsAt}
-                isLoadingVideoDir={isLoadingVideoDir}
-                isLoadingVideo={isLoadingVideo}
-                isUpdatingLabels={isUpdatingLabels}
-                updatingLabelsErr={updatingLabelsErr}
-                updateLabels={updateLabels}
-                editLabels={editLabels}
-              />
-            </div>
+            <div className={cx(p['pane-sm'], p['sidebar'], p['padded-bottom-more'], s['pane-videos'])}><Videos {...this.props} /></div>
+            <div className={p['pane']}><Player {...this.props} /></div>
+            <div className={cx(p['sidebar'], s['pane-labels'])}><Labels {...this.props} /></div>
           </div>
         </div>
-        <footer className={cx(p['toolbar'], p['toolbar-footer'])}>
-          {
-            this.renderButons(labels, oldLabels, labelsAt, oldLabelsAt)
-          }
-        </footer>
+        <footer className={cx(p['toolbar'], p['toolbar-footer'])}>{this.renderButtons()}</footer>
       </div>
     );
   }

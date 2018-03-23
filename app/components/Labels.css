@@ -18,3 +18,13 @@
 .labels-tip-text {
 
 }
+
+.label-tip {
+  margin-left: 10px;
+  display: inline-block;
+  font-size: 13px;
+  margin-bottom: 5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

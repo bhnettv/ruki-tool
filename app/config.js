@@ -1,22 +1,35 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
-import process from 'process';
+
+let userPath = os.homedir();
+
+const setUserPath = (p) => {
+  userPath = p;
+  // console.log('write user path:', userPath);
+};
+
+const getUserPath = () => {
+  // console.log('read user path:', userPath);
+  return userPath;
+};
 
 const getMediaPath = () => {
-  const userDataPath = os.homedir();
-//   const userDataPath = process.cwd();
   let mediaPath = os.homedir();
-  if (fs.existsSync(path.join(userDataPath, 'ruki.txt'))) {
-    mediaPath = fs.readFileSync(path.join(userDataPath, 'ruki.txt'), { encoding: 'utf8' });
+  if (fs.existsSync(path.join(os.homedir(), 'ruki.txt'))) {
+    mediaPath = fs.readFileSync(path.join(os.homedir(), 'ruki.txt'), { encoding: 'utf8' });
   }
+  // console.log('read media path:', mediaPath);
   return mediaPath;
 };
 
 const setMediaPath = (mediaPath) => {
-  const userDataPath = os.homedir();
-//   const userDataPath = process.cwd();
-  fs.writeFileSync(path.join(userDataPath, 'ruki.txt'), mediaPath, { encoding: 'utf8' });
+  try {
+    // console.log('write media path:', mediaPath);
+    fs.writeFileSync(path.join(os.homedir(), 'ruki.txt'), mediaPath, { encoding: 'utf8' });
+  } catch (e) {
+    console.log(e);
+  }
 };
 
-export default { getMediaPath, setMediaPath };
+export default { getMediaPath, setMediaPath, setUserPath, getUserPath };

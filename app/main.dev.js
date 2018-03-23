@@ -119,4 +119,10 @@ app.on('ready', async () => {
       }
     });
   });
+
+  // 监听获取用户目录
+  ipcMain.on('get-userPath', (event) => {
+    const userPath = app.getPath('temp');
+    event.sender.send('return-userPath', userPath);
+  });
 });

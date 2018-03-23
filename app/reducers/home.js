@@ -7,6 +7,7 @@ import {
   EDIT_LABELS,
   CLOSE_VIDEO_DIR,
   UPDATE_NOTE,
+  SCAN_DATETIME,
 } from '../actions/home';
 
 export type LabelType = {
@@ -35,6 +36,8 @@ export type homeStateType = {
   +updatingLabelsErr: string,
   +isUpdatingNote: boolean,
   +updatingNoteErr: string,
+  +isScaningDateTime: boolean,
+  +scaningDateTimeErr: string,
   +video: string,
   +videoDir: string,
   +videos: string[],
@@ -61,6 +64,8 @@ export default function home(state: homeStateType = {
   updatingLabelsErr: '',
   isUpdatingNote: false,
   updatingNoteErr: '',
+  isScaningDateTime: false,
+  scaningDateTimeErr: '',
   video: '',
   videoDir: '',
   videos: [],
@@ -225,6 +230,23 @@ export default function home(state: homeStateType = {
         } else {
           // 异步执行开始
           newState.isUpdatingNote = true;
+        }
+        return { ...state, ...newState };
+      }
+    case SCAN_DATETIME:
+      {
+        const newState = {};
+        if (action.datetime) {
+          // 异步执行成功，更新label
+          newState.labels = { ...state.labels, ...{ datetime: action.datetime } };
+          newState.isScaningDateTime = false;
+        } else if (action.scaningDateTimeErr) {
+          // 异步执行失败
+          newState.scaningDateTimeErr = action.scaningDateTimeErr;
+          newState.isScaningDateTime = false;
+        } else {
+          // 异步执行开始
+          newState.isScaningDateTime = true;
         }
         return { ...state, ...newState };
       }

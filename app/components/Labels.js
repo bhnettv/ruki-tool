@@ -11,13 +11,17 @@ import { LABELS_AT, CRASHES, RULES, KEYWORDS } from '../constant';
 export default class Labels extends Component {
   props: {
     videoDir: ?string,
+    video: ?string,
     labels: ?LabelType,
     labelsAt: ?string,
     isLoadingVideo: boolean,
     isLoadingVideoDir: boolean,
     isUpdatingLabels: boolean,
     updatingLabelsErr: ?string,
+    isScaningDateTime: boolean,
+    scaningDateTimeErr: ?string,
     editLabels: (LabelType, string) => void,
+    scanDateTime: (string, string) => void,
   };
 
   renderLabelAt = (name, vDir) => {
@@ -43,6 +47,7 @@ export default class Labels extends Component {
   render() {
     const {
       videoDir,
+      video,
       labels,
       labelsAt,
       isLoadingVideo,
@@ -50,7 +55,10 @@ export default class Labels extends Component {
       isUpdatingLabels,
       updatingLabelsErr,
       updateLabels,
+      isScaningDateTime,
+      scaningDateTimeErr,
       editLabels,
+      scanDateTime,
     } = this.props;
     return (
       <div className={s['container']}>
@@ -93,7 +101,7 @@ export default class Labels extends Component {
                   className={p['form-control']}
                   name="title"
                   id="title"
-                  rows="1"
+                  rows="2"
                   value={labels.title}
                   onChange={(e) => {
                     const newLabels = { title: e.target.value };
@@ -103,7 +111,15 @@ export default class Labels extends Component {
                 />
               </div>
               <div className={p['form-group']}>
-                <label htmlFor="datetime">时间</label>
+                <div>
+                  <label htmlFor="datetime">时间</label>
+                  <span
+                    className={s["label-tip"]}
+                    onClick={(e) => {
+                      scanDateTime(videoDir, video);
+                    }}
+                  >(自动识别)</span>
+                </div>
                 <input
                   className={p['form-control']}
                   name="datetime"
@@ -115,19 +131,6 @@ export default class Labels extends Component {
                   }}
                   placeholder="2017-12-7 11:30:30"
                 />
-                {/* <Datetime
-                  className={p['form-datetime']}
-                  name="datetime"
-                  id="datetime"
-                  value={labels.datetime}
-                  dateFormat="YYYY-MM-DD"
-                  timeFormat="HH:mm:ss"
-                  onChange={(data) => {
-                    console.log(data)
-                    // const newLabels = { datetime: e.target.value };
-                    // editLabels({...labels, ...newLabels}, labelsAt);
-                  }}
-                /> */}
               </div>
               <div className={p['form-group']}>
                 <label htmlFor="coords">地点</label>

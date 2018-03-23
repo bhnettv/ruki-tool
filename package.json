@@ -40,9 +40,10 @@
       "main.prod.js",
       "main.prod.js.map",
       "package.json",
-      "mpv/"
+      "mpv/",
+      "tesseract/"
     ],
-    "asarUnpack": "mpv/",
+    "asarUnpack": ["mpv/", "tesseract/"],
     "dmg": {
       "contents": [
         {
@@ -193,9 +194,11 @@
     "classnames": "^2.2.5",
     "devtron": "^1.4.0",
     "electron-debug": "^1.5.0",
+    "fluent-ffmpeg": "^2.1.2",
     "font-awesome": "^4.7.0",
     "ftp": "^0.3.10",
     "history": "^4.7.2",
+    "jimp": "^0.2.28",
     "moment": "^2.21.0",
     "mpv.js": "^0.2.2",
     "react": "^15.6.2",
@@ -209,7 +212,8 @@
     "react-treebeard": "^2.1.0",
     "redux": "^3.7.2",
     "redux-thunk": "^2.2.0",
-    "source-map-support": "^0.4.18"
+    "source-map-support": "^0.4.18",
+    "tesseract.js": "^1.0.10"
   },
   "devEngines": {
     "node": ">=7.x",
