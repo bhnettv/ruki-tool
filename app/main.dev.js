@@ -12,9 +12,9 @@
  */
 import { app, BrowserWindow, ipcMain, dialog } from 'electron';
 import path from 'path';
-import MenuBuilder from './menu';
 import { getPluginEntry } from 'mpv.js';
-import config from './config';
+import MenuBuilder from './menu';
+import { getMediaPath, setMediaPath } from './config';
 
 let mainWindow = null;
 
@@ -76,7 +76,7 @@ app.on('ready', async () => {
     show: false,
     width: 1850,
     height: 920,
-    webPreferences: {plugins: true}
+    webPreferences: { plugins: true }
   });
 
   mainWindow.loadURL(`file://${__dirname}/app.html`);
@@ -98,18 +98,25 @@ app.on('ready', async () => {
   const menuBuilder = new MenuBuilder(mainWindow);
   menuBuilder.buildMenu();
 
+  // 监听打开目录
   ipcMain.on('open-file-dialog', (event) => {
+    // 从应用目录获取视频根目录
     dialog.showOpenDialog(mainWindow, {
-      defaultPath: config.ftp.macMount,
+      defaultPath: getMediaPath(),
       properties: ['openDirectory']
     }, (files) => {
       if (files) {
-        const regexp = new RegExp(`^${config.ftp.macMount}/(ddpai|s360)/(.+)$`);
+        const regexp = new RegExp('^(.+)/(ddpai|s360)/(.+)$');
         const results = regexp.exec(files);
-        if (results && results[1] && results[2]) {
-          event.sender.send('selected-directory', { root: results[1], sub: results[2] })
+        // 路径的第一个匹配作为视频根目录，并且写入配置文件
+        if (results && results[1]) {
+          setMediaPath(results[1]);
+        }
+        // 路径的后两个匹配作为文件夹根和文件夹
+        if (results && results[2] && results[3]) {
+          event.sender.send('selected-directory', { root: results[2], sub: results[3] });
         }
       }
-    })
+    });
   });
 });

@@ -9,7 +9,7 @@ import p from '../photon/dist/css/photon.css';
 import Player from './Player';
 import Labels from './Labels';
 import Videos from './Videos';
-import config from '../config';
+import { getMediaPath } from '../config';
 import type { LabelType, NoteType } from '../reducers/home';
 
 
@@ -45,8 +45,8 @@ export default class Home extends Component {
 
   // 启动时加载某个路径的视频
   componentDidMount() {
-    const { choseVideoDir } = this.props;
-    choseVideoDir('ddpai/ddpai_t30_c1_l1');
+    // const { choseVideoDir } = this.props;
+    // choseVideoDir('ddpai/ddpai_t30_c1_l1');
   }
 
   arrayEqual = (a, b) => {
@@ -84,7 +84,7 @@ export default class Home extends Component {
       return (
         <div className={p['toolbar-actions']}>
           <div className={s['status']}>
-            {`路径：${path.join(config.ftp.macMount, videoDir, video)}`}
+            {`路径：${path.join(getMediaPath(), videoDir, video)}`}
           </div>
           <button
             className={cx(p['btn'], p['btn-primary'], p['pull-right'])}
@@ -121,7 +121,7 @@ export default class Home extends Component {
       return (
         <div className={p['toolbar-actions']}>
           <div className={s['status']}>
-            {`路径：${path.join(config.ftp.macMount, videoDir, video)}`}
+            {`路径：${path.join(getMediaPath(), videoDir, video)}`}
           </div>
         </div>
       )
@@ -159,9 +159,7 @@ export default class Home extends Component {
     } = this.props;
     return (
       <div className={p['window']}>
-        <div
-          className={p['tab-group']}
-        >
+        <div className={p['tab-group']}>
           {
             videoDirs.map((vd) => (
               <div
@@ -175,8 +173,8 @@ export default class Home extends Component {
               >
                 <span
                   className={cx(p['icon'], p['icon-cancel'], p['icon-close-tab'])}
-                  // onClick={() => closeVideoDir(vd)}
-                ></span>
+                  onClick={() => closeVideoDir(vd)}
+                />
                 {
                   vd === videoDir && isLoadingVideoDir ?
                   (
@@ -184,7 +182,7 @@ export default class Home extends Component {
                       <i className="fa fa-spinner fa-spin fa-fw" />
                       <span className="sr-only">加载中...</span>
                     </span>
-                  ):
+                  ) :
                   (
                     <span>{vd}</span>
                   )
@@ -194,12 +192,12 @@ export default class Home extends Component {
           }
           <div
             className={cx(p['tab-item'], p['tab-item-fixed'])}
-            onClick={(e) => {
+            onClick={() => {
               ipcRenderer.send('open-file-dialog');
-              ipcRenderer.on('selected-directory', (event, param) => choseVideoDir(path.join(param.root, param.sub)))
+              ipcRenderer.on('selected-directory', (event, param) => choseVideoDir(path.join(param.root, param.sub)));
             }}
           >
-            <span className={cx(p['icon'], p['icon-plus'])}></span>
+            <span className={cx(p['icon'], p['icon-plus'])} />
           </div>
         </div>
         <div className={p['window-content']} data-tid="container">

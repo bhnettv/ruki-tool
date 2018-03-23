@@ -91,155 +91,143 @@ export default function home(state: homeStateType = {
 }, action: actionType) {
   switch (action.type) {
     case CHOSE_VIDEO:
-    {
-      const newState = { video: action.video };
-      if (action.labels) {
-        // 异步执行成功，更新labels状态
-        newState.labels = action.labels;
-        newState.labelsAt = action.labelsAt;
-        newState.oldLabels = action.labels;
-        newState.oldLabelsAt = action.labelsAt;
-        newState.isLoadingVideo = false;
-      } else if (action.loadingVideoErr) {
-        // 异步执行失败
-        newState.loadingVideoErr = action.loadingVideoErr;
-        newState.isLoadingVideo = false;
-      } else {
-        // 异步执行开始，重置labels状态
-        newState.labels = {
-          title: '',
-          datetime: '',
-          range: [0, -1],
-          coords: [],
-          crashes: [],
-          rules: [],
-          keywords: [],
-          plates: [],
-        };
-        newState.labelsAt = '';
-        newState.oldLabels = {
-          title: '',
-          datetime: '',
-          range: [0, -1],
-          coords: [],
-          crashes: [],
-          rules: [],
-          keywords: [],
-          plates: [],
-        };
-        newState.oldLabelsAt = '';
-        newState.isLoadingVideo = true;
+      {
+        const newState = { video: action.video };
+        if (action.labels) {
+          // 异步执行成功，更新labels状态
+          newState.labels = action.labels;
+          newState.labelsAt = action.labelsAt;
+          newState.oldLabels = action.labels;
+          newState.oldLabelsAt = action.labelsAt;
+          newState.isLoadingVideo = false;
+        } else if (action.loadingVideoErr) {
+          // 异步执行失败
+          newState.loadingVideoErr = action.loadingVideoErr;
+          newState.isLoadingVideo = false;
+        } else {
+          // 异步执行开始，重置labels状态
+          newState.labels = {
+            title: '',
+            datetime: '',
+            range: [0, -1],
+            coords: [],
+            crashes: [],
+            rules: [],
+            keywords: [],
+            plates: [],
+          };
+          newState.labelsAt = '';
+          newState.oldLabels = {
+            title: '',
+            datetime: '',
+            range: [0, -1],
+            coords: [],
+            crashes: [],
+            rules: [],
+            keywords: [],
+            plates: [],
+          };
+          newState.oldLabelsAt = '';
+          newState.isLoadingVideo = true;
+        }
+        return { ...state, ...newState };
       }
-      return { ...state, ...newState };
-    }
     case CHOSE_VIDEO_MORE:
-    {
-      const newState = { };
-      if (action.videos) {
-        // 异步执行成功，更新videos状态
-        newState.videos = [...state.videos, ...action.videos];
-        newState.isLoadingVideoMore = false;
-      } else if (action.loadingVideoMoreErr) {
-        // 异步执行失败
-        newState.loadingVideoMoreErr = action.loadingVideoMoreErr;
-        newState.isLoadingVideoMore = false;
-      } else {
-        // 异步执行开始
-        newState.isLoadingVideoMore = true;
+      {
+        const newState = { };
+        if (action.videos) {
+          // 异步执行成功，更新videos状态
+          newState.videos = [...state.videos, ...action.videos];
+          newState.isLoadingVideoMore = false;
+        } else if (action.loadingVideoMoreErr) {
+          // 异步执行失败
+          newState.loadingVideoMoreErr = action.loadingVideoMoreErr;
+          newState.isLoadingVideoMore = false;
+        } else {
+          // 异步执行开始
+          newState.isLoadingVideoMore = true;
+        }
+        return { ...state, ...newState };
       }
-      return { ...state, ...newState };
-    }
     case CHOSE_VIDEO_DIR:
-    {
-      const newState = {
-        videoDir: action.videoDir,
-        videoDirs: state.videoDirs.indexOf(action.videoDir) === -1 ? [...state.videoDirs, action.videoDir] : state.videoDirs,
-      };
-      if (action.videos && action.notes) {
-        // 异步执行成功，更新videos状态
-        newState.video = state.video && action.videos.length ? state.video : action.videos[0];
-        newState.videos = action.videos;
-        newState.notes = action.notes;
-        newState.isLoadingVideoDir = false;
-      } else if (action.loadingVideoDirErr) {
-        // 异步执行失败
-        newState.loadingVideoDirErr = action.loadingVideoDirErr;
-        newState.isLoadingVideoDir = false;
-      } else {
-        // 异步执行开始
-        newState.video = '';
-        newState.videos = [];
-        newState.isLoadingVideoDir = true;
+      {
+        const newState = {
+          videoDir: action.videoDir,
+          videoDirs: state.videoDirs.indexOf(action.videoDir) === -1 ? [...state.videoDirs, action.videoDir] : state.videoDirs,
+        };
+        if (action.videos && action.notes) {
+          // 异步执行成功，更新videos状态
+          newState.video = state.video && action.videos.length ? state.video : action.videos[0];
+          newState.videos = action.videos;
+          newState.notes = action.notes;
+          newState.isLoadingVideoDir = false;
+        } else if (action.loadingVideoDirErr) {
+          // 异步执行失败
+          newState.loadingVideoDirErr = action.loadingVideoDirErr;
+          newState.isLoadingVideoDir = false;
+        } else {
+          // 异步执行开始
+          newState.video = '';
+          newState.videos = [];
+          newState.isLoadingVideoDir = true;
+        }
+        return { ...state, ...newState };
       }
-      return { ...state, ...newState };
-    }
-    case UPDATE_LABELS:
-    {
-      const newState = {};
-      if (action.labels && action.labelsAt) {
-        // 异步执行成功，更新旧的labels和labelsAt
-        newState.oldLabels = action.labels;
-        newState.oldLabelsAt = action.labelsAt;
-        newState.isUpdatingLabels = false;
-      } else if (action.updatingLabelsErr) {
-        // 异步执行失败
-        newState.updatingLabelsErr = action.updatingLabelsErr;
-        newState.isUpdatingLabels = false;
-      } else {
-        newState.isUpdatingLabels = true;
-      }
-      return { ...state, ...newState };
-    }
-    case EDIT_LABELS:
-    {
-      const newState = {
-        labels: action.labels,
-        labelsAt: action.labelsAt,
-      };
-      return { ...state, ...newState };
-    }
     case CLOSE_VIDEO_DIR:
-    {
-      const newState = {
-        videoDir: action.videoDir,
-        videoDirs: state.videoDirs.filter((vDir) => vDir !== action.videoDir),
-      };
-      if (action.videos) {
-        // 异步执行成功，更新videos状态
-        newState.video = state.video && action.videos.length ? state.video : action.videos[0];
-        newState.videos = action.videos;
-        newState.isLoadingVideoDir = false;
-      } else if (action.loadingVideoDirErr) {
-        // 异步执行失败
-        newState.loadingVideoDirErr = action.loadingVideoDirErr;
-        newState.isLoadingVideoDir = false;
-      } else {
-        // 异步执行开始
-        newState.video = '';
-        newState.videos = [];
-        newState.isLoadingVideoDir = true;
+      {
+        const index = state.videoDirs.indexOf(action.videoDir);
+        const newState = {
+          videoDirs: state.videoDirs,
+        };
+        if (index !== -1) {
+          newState.videoDirs.splice(index, 1);
+        }
+        return { ...state, ...newState };
       }
-      return { ...state, ...newState };
-    }
+    case UPDATE_LABELS:
+      {
+        const newState = {};
+        if (action.labels && action.labelsAt) {
+          // 异步执行成功，更新旧的labels和labelsAt
+          newState.oldLabels = action.labels;
+          newState.oldLabelsAt = action.labelsAt;
+          newState.isUpdatingLabels = false;
+        } else if (action.updatingLabelsErr) {
+          // 异步执行失败
+          newState.updatingLabelsErr = action.updatingLabelsErr;
+          newState.isUpdatingLabels = false;
+        } else {
+          newState.isUpdatingLabels = true;
+        }
+        return { ...state, ...newState };
+      }
+    case EDIT_LABELS:
+      {
+        const newState = {
+          labels: action.labels,
+          labelsAt: action.labelsAt,
+        };
+        return { ...state, ...newState };
+      }
     case UPDATE_NOTE:
-    {
-      const newState = {};
-      if (action.note && action.name) {
-        // 异步执行成功，更新notes
-        const newNotes = {};
-        newNotes[action.name] = action.note;
-        newState.notes = { ...state.notes, ...newNotes };
-        newState.isUpdatingNote = false;
-      } else if (action.updatingNoteErr) {
-        // 异步执行失败
-        newState.updatingNoteErr = action.updatingNoteErr;
-        newState.isUpdatingNote = false;
-      } else {
-        // 异步执行开始
-        newState.isUpdatingNote = true;
+      {
+        const newState = {};
+        if (action.note && action.name) {
+          // 异步执行成功，更新notes
+          const newNotes = {};
+          newNotes[action.name] = action.note;
+          newState.notes = { ...state.notes, ...newNotes };
+          newState.isUpdatingNote = false;
+        } else if (action.updatingNoteErr) {
+          // 异步执行失败
+          newState.updatingNoteErr = action.updatingNoteErr;
+          newState.isUpdatingNote = false;
+        } else {
+          // 异步执行开始
+          newState.isUpdatingNote = true;
+        }
+        return { ...state, ...newState };
       }
-      return { ...state, ...newState };
-    }
     default:
       return state;
   }

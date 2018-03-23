@@ -29,18 +29,18 @@ export default class Videos extends Component {
   // 键盘按键监听
   handleKeyDown = (e) => {
     const { video, videos, choseVideo, videoDir } = this.props;
-    if (e.key === "ArrowDown") {
+    if (e.key === 'ArrowDown') {
       e.preventDefault();
       const index = videos.indexOf(video);
       if (index !== -1) {
-        const newIndex = (index < videos.length - 1)? index + 1: index;
+        const newIndex = (index < videos.length - 1) ? index + 1 : index;
         choseVideo(videoDir, videos[newIndex]);
       }
-    } else if (e.key === "ArrowUp") {
+    } else if (e.key === 'ArrowUp') {
       e.preventDefault();
       const index = videos.indexOf(video);
       if (index !== -1) {
-        const newIndex = index > 0? index - 1: index;
+        const newIndex = index > 0 ? index - 1 : index;
         choseVideo(videoDir, videos[newIndex]);
       }
     } else {

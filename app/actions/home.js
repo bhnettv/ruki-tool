@@ -1,7 +1,7 @@
 // @flow
 import path from 'path';
 import fs from 'fs';
-import config from '../config';
+import { getMediaPath } from '../config';
 import { homeStateType } from '../reducers/home';
 import { LABELS_AT } from '../constant';
 
@@ -14,7 +14,7 @@ type actionType = {
  * @param {string} vDir 视频根目录
  */
 const getNotes = (vDir) => new Promise((resolve) => {
-  const notePath = path.join(config.ftp.macMount, vDir, 'note.json');
+  const notePath = path.join(getMediaPath(), vDir, 'note.json');
   fs.readFile(notePath, 'utf8', (rErr, data) => {
     if (rErr || !data) {
       // 如果文件不存在则默认为空
@@ -39,7 +39,7 @@ const getNotes = (vDir) => new Promise((resolve) => {
  * @param {number} count 视频个数
  */
 const getMoreFiles = (vDir, v, count) => new Promise((resolve) => {
-  const indexPath = path.join(config.ftp.macMount, vDir, 'index.json');
+  const indexPath = path.join(getMediaPath(), vDir, 'index.json');
   fs.readFile(indexPath, 'utf8', async (rErr, data) => {
     if (rErr || !data) {
       // 如果文件不存在则默认为空
@@ -68,7 +68,7 @@ const getMoreFiles = (vDir, v, count) => new Promise((resolve) => {
  * @param {string} vDir 视频根目录
  */
 const getDirFiles = (vDir) => new Promise((resolve) => {
-  const indexPath = path.join(config.ftp.macMount, vDir, 'index.json');
+  const indexPath = path.join(getMediaPath(), vDir, 'index.json');
   fs.readFile(indexPath, 'utf8', async (rErr, data) => {
     if (rErr || !data) {
       // 如果文件不存在则默认为空
@@ -131,7 +131,7 @@ const getFileInfo = (vDir, v) => new Promise(async (resolve, reject) => {
     if (results && results[1] && results[2]) {
       // 先检查crashme目录
       let data = await getJSONData(v, path.join(
-        config.ftp.macMount,
+        getMediaPath(),
         'raw',
         results[1],
         'crashme',
@@ -141,7 +141,7 @@ const getFileInfo = (vDir, v) => new Promise(async (resolve, reject) => {
       // 如果没有，则继续检查crashit目录
       if (Object.keys(data).length === 0 && data.constructor === Object) {
         data = await getJSONData(v, path.join(
-          config.ftp.macMount,
+          getMediaPath(),
           'raw',
           results[1],
           'crashit',
@@ -152,7 +152,7 @@ const getFileInfo = (vDir, v) => new Promise(async (resolve, reject) => {
       // 如果没有，则继续检查nocrash目录
       if (Object.keys(data).length === 0 && data.constructor === Object) {
         data = await getJSONData(v, path.join(
-          config.ftp.macMount,
+          getMediaPath(),
           'raw',
           results[1],
           'nocrash',
@@ -163,7 +163,7 @@ const getFileInfo = (vDir, v) => new Promise(async (resolve, reject) => {
       // 还是没有，则继续检查原始目录
       if (Object.keys(data).length === 0 && data.constructor === Object) {
         data = await getJSONData(v, path.join(
-          config.ftp.macMount,
+          getMediaPath(),
           vDir,
           'index.json',
         ));
@@ -222,7 +222,7 @@ const getFileInfo = (vDir, v) => new Promise(async (resolve, reject) => {
  * @param {object} note 标注信息
  */
 const setNote = (vDir, v, note) => new Promise((resolve, reject) => {
-  const notePath = path.join(config.ftp.macMount, vDir, 'note.json');
+  const notePath = path.join(getMediaPath(), vDir, 'note.json');
   fs.readFile(notePath, 'utf8', (rErr, data) => {
     if (rErr) {
       // 记录文件不存在，则创建新的
@@ -318,7 +318,7 @@ const setFileInfo = (vDir, v, labels, labelsAt, oldLabelsAt) => new Promise(asyn
       if (labelsAt !== '') {
         // 如果新的视频目录不是原始目录，则添加标签信息到新目录的index.json
         const { message: addMsg } = await setJSONData(v, path.join(
-          config.ftp.macMount,
+          getMediaPath(),
           'raw',
           results[1],
           labelsAt,
@@ -330,13 +330,13 @@ const setFileInfo = (vDir, v, labels, labelsAt, oldLabelsAt) => new Promise(asyn
         // 然后复制视频文件到新目录
         const rd = fs.createReadStream(
           path.join(
-          config.ftp.macMount,
+          getMediaPath(),
           vDir,
           `${v}.mp4`,
         ));
         const wr = fs.createWriteStream(
           path.join(
-          config.ftp.macMount,
+          getMediaPath(),
           'raw',
           results[1],
           labelsAt,
@@ -347,7 +347,7 @@ const setFileInfo = (vDir, v, labels, labelsAt, oldLabelsAt) => new Promise(asyn
           if (oldLabelsAt !== labelsAt && oldLabelsAt !== '') {
             // 如果旧的视频目录不是原始目录，则旧目录的index.json标签信息
             const { message: delMsg } = await setJSONData(v, path.join(
-              config.ftp.macMount,
+              getMediaPath(),
               'raw',
               results[1],
               oldLabelsAt,
@@ -358,7 +358,7 @@ const setFileInfo = (vDir, v, labels, labelsAt, oldLabelsAt) => new Promise(asyn
             }
             // 然后旧目录的删除视频文件
             fs.unlink(path.join(
-              config.ftp.macMount,
+              getMediaPath(),
               'raw',
               results[1],
               oldLabelsAt,
@@ -456,33 +456,18 @@ export const choseVideoDir = (videoDir) => (dispatch: (action: actionType) => vo
   });
 };
 
-export const closeVideoDir = (videoDir) => (dispatch: (action: actionType) => void, getState: () => homeStateType) => {
-  dispatch({
+export const closeVideoDir = (videoDir) => {
+  return {
     type: CLOSE_VIDEO_DIR,
     videoDir: videoDir,
-  });
-  return getDirFiles(videoDir)
-  .then((files) => {
-    dispatch({
-      type: CLOSE_VIDEO_DIR,
-      videoDir: videoDir,
-      videos: files,
-    });
-  })
-  .catch((err) => {
-    dispatch({
-      type: CLOSE_VIDEO_DIR,
-      videoDir: videoDir,
-      loadingVideoDirErr: '超时',
-    });
-  });
+  };
 };
 
 export const updateLabels = (labels, labelsAt) => (dispatch: (action: actionType) => void, getState: () => homeStateType) => {
   dispatch({
     type: UPDATE_LABELS,
   });
-  const { home: { videoDir, video, oldLabelsAt }} = getState();
+  const { home: { videoDir, video, oldLabelsAt } } = getState();
   return setFileInfo(videoDir, video, labels, labelsAt, oldLabelsAt)
   .then((message) => {
     dispatch({

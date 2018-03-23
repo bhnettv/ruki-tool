@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import cx from 'classnames';
 import s from './Player.css';
 import p from '../photon/dist/css/photon.css';
-import config from '../config';
+import { getMediaPath } from '../config';
 import type { LabelType } from '../reducers/home';
 
 export default class Player extends Component {
@@ -51,7 +51,7 @@ export default class Player extends Component {
       this.mpv &&
       this.props.video !== nextProps.video
     ) {
-      const videoPath = path.join(config.ftp.macMount, nextProps.videoDir, `${nextProps.video}.mp4`);
+      const videoPath = path.join(getMediaPath(), nextProps.videoDir, `${nextProps.video}.mp4`);
       this.mpv.command('loadfile', videoPath);
     }
   }
