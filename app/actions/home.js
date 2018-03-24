@@ -143,7 +143,7 @@ export const scanDateTime = (videoDir, video) => (dispatch: (action: actionType)
   .catch((err) => {
     dispatch({
       type: SCAN_DATETIME,
-      scanDateTimeErr: `超时: ${err}`,
+      scaningDateTimeErr: `超时: ${err}`,
     });
   });
 };

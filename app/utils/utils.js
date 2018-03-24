@@ -2,12 +2,14 @@
 import path from 'path';
 import fs from 'fs';
 import ffmpeg from 'fluent-ffmpeg';
-import Tesseract from 'tesseract.js';
 import Jimp from 'jimp';
+import moment from 'moment';
 import { getMediaPath, getUserPath } from '../config';
 
 // 加载tesseract
-const tesseractDir = process.env.NODE_ENV === 'production' ? path.join(__dirname, '../app.asar.unpacked', 'tesseract') : path.join(__dirname, 'tesseract');
+const Tesseract = require('../tesseract/src/index.js');
+const resourcePath = path.join('ruki-tool.app', 'Contents', 'Resources');
+const tesseractDir = process.env.NODE_ENV === 'production' ? path.join(resourcePath, 'app.asar.unpacked', 'tesseract') : path.join(__dirname, 'tesseract');
 const tesseract = Tesseract.create({
   workerPath: path.join(tesseractDir, 'src', 'node', 'worker.js'),
   langPath: path.join(tesseractDir, 'lang'),
@@ -309,7 +311,7 @@ const setJSONData = (v, j, vData) => new Promise((resolve, reject) => {
 const setFileInfo = (vDir, v, labels, labelsAt, oldLabelsAt) => new Promise(async (resolve, reject) => {
   try {
     // 获取路径
-    const regexp = new RegExp(`^(ddpai|s360)/(.+)$`);
+    const regexp = new RegExp('^(ddpai|s360)/(.+)$');
     const results = regexp.exec(vDir);
     // 范围检查
     if (labels.coords.length === 2
@@ -319,6 +321,7 @@ const setFileInfo = (vDir, v, labels, labelsAt, oldLabelsAt) => new Promise(asyn
         || labels.coords[2] > 90)) {
       labels.coords = [];
     }
+
     if (results && results[1] && results[2]) {
       if (labelsAt !== '') {
         // 如果新的视频目录不是原始目录，则添加标签信息到新目录的index.json
@@ -379,6 +382,36 @@ const setFileInfo = (vDir, v, labels, labelsAt, oldLabelsAt) => new Promise(asyn
           }
         });
         rd.pipe(wr);
+      } else {
+        // 如果新的视频目录是原始目录，则删除标签信息index.json和视频
+        if (oldLabelsAt !== labelsAt && oldLabelsAt !== '') {
+          // 如果旧的视频目录不是原始目录，则旧目录的index.json标签信息
+          const { message: delMsg } = await setJSONData(v, path.join(
+            getMediaPath(),
+            'raw',
+            results[1],
+            oldLabelsAt,
+            'index.json',
+          ), null);
+          if (delMsg !== 'ok') {
+            resolve('delete json failed');
+          }
+          // 然后旧目录的删除视频文件
+          fs.unlink(path.join(
+            getMediaPath(),
+            'raw',
+            results[1],
+            oldLabelsAt,
+            `${v}.mp4`,
+          ), (err) => {
+            if (err) {
+              reject(err);
+            }
+            resolve({ message: 'ok' });
+          });
+        } else {
+          resolve({ message: 'ok' });
+        }
       }
     } else {
       resolve({ message: 'invalid video directory' });
@@ -419,7 +452,6 @@ const scanDatetimePart = image =>
         const result = await tesseract.recognize(buffer, {
           tessedit_char_whitelist: '0123456789-:/',
         });
-        console.log(result);
         const datetime = /201\d[-/][01]\d[-/][0123]\d [012]\d:[012345]\d:[012345]\d/.exec(
           result.text,
         );
@@ -481,7 +513,7 @@ const scanDateTime = (rawFile, width, height) =>
   });
 
 /**
- * 获取视频日期时间
+ * 获取视频日期时间，失败则返回当前时间
  * @param {string} vDir 视频根目录
  * @param {string} v 视频ID
  */
@@ -495,7 +527,7 @@ const getDateTime = (vDir, v) =>
       if (result) {
         resolve(result[0]);
       }
-      resolve('');
+      resolve(moment().format('YYYY-MM-DD HH:mm:ss'));
     } catch (e) {
       console.log(e);
       reject(e);

@@ -116,9 +116,11 @@ export default class Labels extends Component {
                   <span
                     className={s["label-tip"]}
                     onClick={(e) => {
-                      scanDateTime(videoDir, video);
+                      if (!isScaningDateTime) {
+                        scanDateTime(videoDir, video);
+                      }
                     }}
-                  >(自动识别)</span>
+                  >({isScaningDateTime ? '识别中' : '自动识别'})</span>
                 </div>
                 <input
                   className={p['form-control']}

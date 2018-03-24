@@ -91,8 +91,7 @@ export default class Home extends Component {
       videoDir,
       video,
     } = this.props;
-    if (labelsAt
-      && (labelsAt !== oldLabelsAt
+    if ((labelsAt !== oldLabelsAt
       || labels.title !== oldLabels.title
       || labels.datetime !== oldLabels.datetime
       || !this.arrayEqual(labels.coords, oldLabels.coords)
@@ -111,7 +110,7 @@ export default class Home extends Component {
             className={cx(p['btn'], p['btn-primary'], p['pull-right'])}
             onClick={() => {
               updateLabels(labels, labelsAt);
-              updateNote(videoDir, video, { color: labelsAt });
+              updateNote(videoDir, video, { color: labelsAt || 'seen' });
             }}
           >
             {

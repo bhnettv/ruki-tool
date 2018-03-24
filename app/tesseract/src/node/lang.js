@@ -8,7 +8,7 @@ var langdata = require('../common/langdata.json')
 function getLanguageData(req, res, cb){
     var lang = req.options.lang;
     var langfile = lang + '.traineddata.gz';
-    var url = req.workerOptions.langPath + langfile;
+    var url = path.join(req.workerOptions.langPath, langfile);
     
     fs.readFile(url, function (err, data) {
         if(!err) return cb(new Uint8Array(data));

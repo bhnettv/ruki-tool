@@ -43,7 +43,10 @@
       "mpv/",
       "tesseract/"
     ],
-    "asarUnpack": ["mpv/", "tesseract/"],
+    "asarUnpack": [
+      "mpv/",
+      "tesseract/"
+    ],
     "dmg": {
       "contents": [
         {
