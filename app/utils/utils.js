@@ -529,7 +529,7 @@ const getDateTime = (vDir, v) =>
       }
       resolve(moment().format('YYYY-MM-DD HH:mm:ss'));
     } catch (e) {
-      console.log(e);
+      console.error(e);
       reject(e);
     }
   });

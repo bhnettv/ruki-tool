@@ -95,6 +95,10 @@ app.on('ready', async () => {
     mainWindow = null;
   });
 
+  if (!(process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true')) {
+    mainWindow.webContents.openDevTools();
+  }
+
   const menuBuilder = new MenuBuilder(mainWindow);
   menuBuilder.buildMenu();
 
